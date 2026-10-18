@@ -304,7 +304,6 @@ int main() {
 			// Freeing textures
 			SDL_DestroyTexture(A_Texture);
 			SDL_DestroyTexture(B_Texture);
-			SDL_DestroyTexture(C_Texture);
 			SDL_DestroyTexture(Health_Texture);
 			SDL_DestroyTexture(Fire_Texture);
 			SDL_DestroyTexture(Enemy_Texture);
@@ -346,10 +345,9 @@ int main() {
 
 		}
 		if (winner && event.space) {
-			// Freeing textures 
+			// Freeing textures
 			SDL_DestroyTexture(A_Texture);
 			SDL_DestroyTexture(B_Texture);
-			SDL_DestroyTexture(C_Texture);
 			SDL_DestroyTexture(Health_Texture);
 			SDL_DestroyTexture(Fire_Texture);
 			SDL_DestroyTexture(Enemy_Texture);
