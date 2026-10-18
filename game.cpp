@@ -4,10 +4,21 @@
 
 using namespace std;
 
+SDL_Texture* LoadTextureChecked(SDL_Renderer* ren, const char* path) {
+	SDL_Texture* tex = IMG_LoadTexture(ren, path);
+	if (!tex) {
+		SDL_Log("Failed to load texture '%s': %s", path, IMG_GetError());
+	}
+	return tex;
+}
+
 int main() {
 	int window_size = 700;
 
-	SDL__CreateWindow("Square Baby", window_size, window_size);
+	if (SDL__CreateWindow("Square Baby", window_size, window_size) != 0) {
+		SDL_Log("Failed to initialize SDL/window: %s", SDL_GetError());
+		return 1;
+	}
 	Uint64 pasttime = SDL_GetTicks();
 	//-------------Textures--------------------------
 	SDL_Texture* A_Texture = NULL;
@@ -20,15 +31,15 @@ int main() {
 	SDL_Texture* GameOver_Texture = NULL;
 	SDL_Texture* Win_Texture = NULL;
 	//---------------Giving Address----------------------
-	A_Texture = IMG_LoadTexture(renderer, "BacheGherti.png");
-	B_Texture = IMG_LoadTexture(renderer, "Hestler.png");
+	A_Texture = LoadTextureChecked(renderer, "BacheGherti.png");
+	B_Texture = LoadTextureChecked(renderer, "Hestler.png");
 	C_Texture = A_Texture;
-	Health_Texture = IMG_LoadTexture(renderer, "Health.png");
-	Fire_Texture = IMG_LoadTexture(renderer, "Fire.png");
-	Enemy_Texture = IMG_LoadTexture(renderer, "Enemy.png");
-	Background_Texture = IMG_LoadTexture(renderer, "background.png");
-	GameOver_Texture = IMG_LoadTexture(renderer, "GameOver.png");
-	Win_Texture = IMG_LoadTexture(renderer, "win.png");
+	Health_Texture = LoadTextureChecked(renderer, "Health.png");
+	Fire_Texture = LoadTextureChecked(renderer, "Fire.png");
+	Enemy_Texture = LoadTextureChecked(renderer, "Enemy.png");
+	Background_Texture = LoadTextureChecked(renderer, "background.png");
+	GameOver_Texture = LoadTextureChecked(renderer, "GameOver.png");
+	Win_Texture = LoadTextureChecked(renderer, "win.png");
 
 
 	//----------- Variables --------------
@@ -61,8 +72,13 @@ int main() {
 
 
 	SDL_DisplayMode current;
-	SDL_GetCurrentDisplayMode(0, &current);
-	Uint32 fps = 1000 / current.refresh_rate;
+	Uint32 fps = 16; // fallback: ~60fps frame time in ms
+	if (SDL_GetCurrentDisplayMode(0, &current) == 0 && current.refresh_rate > 0) {
+		fps = 1000 / current.refresh_rate;
+	}
+	else {
+		SDL_Log("Could not get display refresh rate, defaulting to 60fps timing: %s", SDL_GetError());
+	}
 
 	while (true) {
 
@@ -312,15 +328,15 @@ int main() {
 			SDL_DestroyTexture(Win_Texture);
 
 			// Re-loading textures
-			A_Texture = IMG_LoadTexture(renderer, "BacheGherti.png");
-			B_Texture = IMG_LoadTexture(renderer, "Hestler.png");
+			A_Texture = LoadTextureChecked(renderer, "BacheGherti.png");
+			B_Texture = LoadTextureChecked(renderer, "Hestler.png");
 			C_Texture = A_Texture;
-			Health_Texture = IMG_LoadTexture(renderer, "Health.png");
-			Fire_Texture = IMG_LoadTexture(renderer, "Fire.png");
-			Enemy_Texture = IMG_LoadTexture(renderer, "Enemy.png");
-			Background_Texture = IMG_LoadTexture(renderer, "background.png");
-			GameOver_Texture = IMG_LoadTexture(renderer, "GameOver.png");
-			Win_Texture = IMG_LoadTexture(renderer, "win.png");
+			Health_Texture = LoadTextureChecked(renderer, "Health.png");
+			Fire_Texture = LoadTextureChecked(renderer, "Fire.png");
+			Enemy_Texture = LoadTextureChecked(renderer, "Enemy.png");
+			Background_Texture = LoadTextureChecked(renderer, "background.png");
+			GameOver_Texture = LoadTextureChecked(renderer, "GameOver.png");
+			Win_Texture = LoadTextureChecked(renderer, "win.png");
 
 			// Reset game variables
 			gameover = false;
@@ -356,15 +372,15 @@ int main() {
 			SDL_DestroyTexture(Win_Texture);
 
 			// Re-loading textures
-			A_Texture = IMG_LoadTexture(renderer, "BacheGherti.png");
-			B_Texture = IMG_LoadTexture(renderer, "Hestler.png");
+			A_Texture = LoadTextureChecked(renderer, "BacheGherti.png");
+			B_Texture = LoadTextureChecked(renderer, "Hestler.png");
 			C_Texture = A_Texture;
-			Health_Texture = IMG_LoadTexture(renderer, "Health.png");
-			Fire_Texture = IMG_LoadTexture(renderer, "Fire.png");
-			Enemy_Texture = IMG_LoadTexture(renderer, "Enemy.png");
-			Background_Texture = IMG_LoadTexture(renderer, "background.png");
-			GameOver_Texture = IMG_LoadTexture(renderer, "GameOver.png");
-			Win_Texture = IMG_LoadTexture(renderer, "win.png");
+			Health_Texture = LoadTextureChecked(renderer, "Health.png");
+			Fire_Texture = LoadTextureChecked(renderer, "Fire.png");
+			Enemy_Texture = LoadTextureChecked(renderer, "Enemy.png");
+			Background_Texture = LoadTextureChecked(renderer, "background.png");
+			GameOver_Texture = LoadTextureChecked(renderer, "GameOver.png");
+			Win_Texture = LoadTextureChecked(renderer, "win.png");
 
 			// Reset game variables
 			winner = false;
