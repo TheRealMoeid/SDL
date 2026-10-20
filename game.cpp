@@ -294,26 +294,37 @@ int main() {
 		//---- movement ---------------------------------------------
 
 		if (state == GameState::Playing) { //allow only game is not over
-			if (event.up && Character_j >= 0) {
+			if (event.up) {
 				SDL_Rect rect = { Character_i, Character_j, size, size };
 				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
 				Character_j -= 3;
 			}
-			if (event.right && Character_i < (window_size - size)) {
+			if (event.right) {
 				SDL_Rect rect = { Character_i, Character_j, size, size };
 				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
 				Character_i += 3;
 			}
-			if (event.down && Character_j < (window_size - size)) {
+			if (event.down) {
 				SDL_Rect rect = { Character_i, Character_j, size, size };
 				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
 				Character_j += 3;
 			}
-			if (event.left && 0 <= Character_i) {
+			if (event.left) {
 				SDL_Rect rect = { Character_i, Character_j, size, size };
 				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
 				Character_i -= 3;
 			}
+
+			// B8: clamp after moving instead of only gating the step
+			// beforehand — the old `Character_j >= 0` / `Character_i <
+			// window_size - size` guards still let a 3px step overshoot
+			// by up to 2px on any edge.
+			int max_i = window_size - (int)size;
+			int max_j = window_size - (int)size;
+			if (Character_i < 0) Character_i = 0;
+			if (Character_i > max_i) Character_i = max_i;
+			if (Character_j < 0) Character_j = 0;
+			if (Character_j > max_j) Character_j = max_j;
 		}
 
 		//------------ CornersOfCharacterAndHealthBarAndFireBarAndEnemy -------------
@@ -343,6 +354,12 @@ int main() {
 		if (collided && (size < (window_size - 100))) {
 			size += HEALTH_GROWTH;
 			sizeHealth = -1;
+
+			// B8: growing can push an edge-hugging player partly outside
+			// the window; clamp immediately rather than waiting for next
+			// frame's movement-clamp to catch it.
+			if (Character_i > window_size - (int)size) Character_i = window_size - (int)size;
+			if (Character_j > window_size - (int)size) Character_j = window_size - (int)size;
 
 			if (!fire_visable) {
 				health_counter++;
