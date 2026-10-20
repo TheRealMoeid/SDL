@@ -2,25 +2,25 @@
 C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(36,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   (compiling source file 'game.cpp')
   
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(115,14): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(131,14): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'game.cpp')
   
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(116,14): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(132,14): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'game.cpp')
   
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(117,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(133,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   (compiling source file 'game.cpp')
   
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(125,16): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(141,16): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
   (compiling source file 'game.cpp')
   
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(126,16): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(142,16): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
   (compiling source file 'game.cpp')
   
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(165,26): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(181,26): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
   (compiling source file 'game.cpp')
   
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(318,21): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(334,21): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
   (compiling source file 'game.cpp')
   
 C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(48,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
