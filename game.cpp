@@ -13,6 +13,15 @@ SDL_Texture* LoadTextureChecked(SDL_Renderer* ren, const char* path) {
 }
 
 
+// B6: real rectangle-overlap test, used for spawn placement (and reusable
+// for collisions). Replaces the old per-loop checks that only tested
+// whether one object's top-left corner fell inside another object's box.
+bool Overlaps(const SDL_Rect& a, const SDL_Rect& b) {
+	if (a.x + a.w <= b.x || b.x + b.w <= a.x) return false;
+	if (a.y + a.h <= b.y || b.y + b.h <= a.y) return false;
+	return true;
+}
+
 constexpr double HEALTH_GROWTH = 40.0; // px gained per health item eaten
 constexpr double FIRE_PENALTY = 40.0;  // px lost per fire item touched
 
@@ -150,15 +159,14 @@ int main() {
 
 		//---- random number for health bar ------------------------
 		if (sizeHealth <= 0) {
+			SDL_Rect candidate;
 			do {
 				Random_Health_i = rand() % (window_size - 50);
 				Random_Health_j = rand() % (window_size - 50);
-			} while (((Character_i < Random_Health_i && Random_Health_i < Character_i + size) &&
-				(Character_j < Random_Health_j && Random_Health_j < Character_j + size)) ||
-				((Enemy_i < Random_Health_i && Random_Health_i < Enemy_i + size) &&
-					(Enemy_j < Random_Health_j && Random_Health_j < Enemy_j + size)) ||
-				((Random_Fire_i < Random_Health_i && Random_Health_i < Random_Fire_i + sizeFire) &&
-					(Random_Fire_j < Random_Health_j && Random_Health_j < Random_Fire_j + sizeFire)));
+				candidate = { Random_Health_i, Random_Health_j, 50, 50 };
+			} while (Overlaps(candidate, SDL_Rect{ Character_i, Character_j, (int)size, (int)size }) ||
+				Overlaps(candidate, SDL_Rect{ Enemy_i, Enemy_j, 50, 50 }) ||
+				(fire_visable && Overlaps(candidate, SDL_Rect{ Random_Fire_i, Random_Fire_j, (int)sizeFire, (int)sizeFire })));
 
 			sizeHealth = 50;
 			fairness_health = sqrt(((Random_Health_i - Character_i) * (Random_Health_i - Character_i)) +
@@ -181,15 +189,14 @@ int main() {
 
 		//---- random number for fire bar -------------------------
 		if (sizeFire <= 0 || !fire_visable) {
+			SDL_Rect candidate;
 			do {
 				Random_Fire_i = rand() % (window_size - 50);
 				Random_Fire_j = rand() % (window_size - 50);
-			} while (((Enemy_i < Random_Fire_i && Random_Fire_i < Enemy_i + size) &&
-				(Enemy_j < Random_Fire_j && Random_Fire_j < Enemy_j + size)) ||
-				((Character_i < Random_Fire_i && Random_Fire_i < Character_i + size) &&
-					(Character_j < Random_Fire_j && Random_Fire_j < Character_j + size)) ||
-				((Random_Fire_i < Random_Health_i && Random_Health_i < Random_Fire_i + sizeFire) &&
-					(Random_Fire_j < Random_Health_j && Random_Health_j < Random_Fire_j + sizeFire)));
+				candidate = { Random_Fire_i, Random_Fire_j, 50, 50 };
+			} while (Overlaps(candidate, SDL_Rect{ Enemy_i, Enemy_j, 50, 50 }) ||
+				Overlaps(candidate, SDL_Rect{ Character_i, Character_j, (int)size, (int)size }) ||
+				(sizeHealth > 0 && Overlaps(candidate, SDL_Rect{ Random_Health_i, Random_Health_j, (int)sizeHealth, (int)sizeHealth })));
 
 			sizeFire = 50;
 			fairness_fire = sqrt(((Random_Fire_i - Character_i) * (Random_Fire_i - Character_i)) +
