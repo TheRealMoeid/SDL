@@ -25,6 +25,67 @@ bool Overlaps(const SDL_Rect& a, const SDL_Rect& b) {
 constexpr double HEALTH_GROWTH = 40.0; // px gained per health item eaten
 constexpr double FIRE_PENALTY = 40.0;  // px lost per fire item touched
 
+// B3: single source of truth for "start a fresh round". Replaces the two
+// near-identical restart blocks (Game Over + Win), which reset size,
+// position, enemy position and score but left health_counter, fire_visable,
+// counter_enemy_direction and enemy_direction untouched. Concrete bug this
+// fixes: dying while a fire was on screen used to leave fire_visable true,
+// so the very first frame of the new round would spawn another fire
+// immediately. Random_Health_i/j and Random_Fire_i/j are not reset here —
+// setting sizeHealth/sizeFire to -1 makes the existing per-frame spawn
+// checks (B6) pick fresh, validated positions on the next frame, same as
+// they already did before.
+void ResetGame(
+	SDL_Renderer* ren,
+	SDL_Texture*& A_Texture, SDL_Texture*& B_Texture, SDL_Texture*& C_Texture,
+	SDL_Texture*& Health_Texture, SDL_Texture*& Fire_Texture, SDL_Texture*& Enemy_Texture,
+	SDL_Texture*& Background_Texture, SDL_Texture*& GameOver_Texture, SDL_Texture*& Win_Texture,
+	int window_size,
+	double& size, double& sizeHealth, double& sizeFire,
+	int& Character_i, int& Character_j,
+	int& Enemy_i, int& Enemy_j,
+	int& health_counter, int& score_counter,
+	int& counter_enemy_direction, int& enemy_direction,
+	bool& gameover, bool& winner, bool& fire_visable)
+{
+	// Freeing textures
+	SDL_DestroyTexture(A_Texture);
+	SDL_DestroyTexture(B_Texture);
+	SDL_DestroyTexture(Health_Texture);
+	SDL_DestroyTexture(Fire_Texture);
+	SDL_DestroyTexture(Enemy_Texture);
+	SDL_DestroyTexture(Background_Texture);
+	SDL_DestroyTexture(GameOver_Texture);
+	SDL_DestroyTexture(Win_Texture);
+
+	// Re-loading textures
+	A_Texture = LoadTextureChecked(ren, "BacheGherti.png");
+	B_Texture = LoadTextureChecked(ren, "Hestler.png");
+	Health_Texture = LoadTextureChecked(ren, "Health.png");
+	Fire_Texture = LoadTextureChecked(ren, "Fire.png");
+	Enemy_Texture = LoadTextureChecked(ren, "Enemy.png");
+	Background_Texture = LoadTextureChecked(ren, "background.png");
+	GameOver_Texture = LoadTextureChecked(ren, "GameOver.png");
+	Win_Texture = LoadTextureChecked(ren, "win.png");
+	C_Texture = A_Texture; // reset character to original (small) sprite
+
+	// Reset game state
+	gameover = false;
+	winner = false;
+	size = 50;
+	sizeHealth = -1;
+	sizeFire = -1;
+	Character_i = (window_size - (int)size) / 2;
+	Character_j = (window_size - (int)size) / 2;
+	Enemy_i = 100;
+	Enemy_j = 100;
+	score_counter = 0;
+	health_counter = 0;
+	fire_visable = false;
+	counter_enemy_direction = 0;
+	enemy_direction = 0;
+}
+
 int main() {
 	int window_size = 700;
 
@@ -328,40 +389,17 @@ int main() {
 		}
 
 		if (gameover && event.space) {
-			// Freeing textures
-			SDL_DestroyTexture(A_Texture);
-			SDL_DestroyTexture(B_Texture);
-			SDL_DestroyTexture(Health_Texture);
-			SDL_DestroyTexture(Fire_Texture);
-			SDL_DestroyTexture(Enemy_Texture);
-			SDL_DestroyTexture(Background_Texture);
-			SDL_DestroyTexture(GameOver_Texture);
-			SDL_DestroyTexture(Win_Texture);
-
-			// Re-loading textures
-			A_Texture = LoadTextureChecked(renderer, "BacheGherti.png");
-			B_Texture = LoadTextureChecked(renderer, "Hestler.png");
-			C_Texture = A_Texture;
-			Health_Texture = LoadTextureChecked(renderer, "Health.png");
-			Fire_Texture = LoadTextureChecked(renderer, "Fire.png");
-			Enemy_Texture = LoadTextureChecked(renderer, "Enemy.png");
-			Background_Texture = LoadTextureChecked(renderer, "background.png");
-			GameOver_Texture = LoadTextureChecked(renderer, "GameOver.png");
-			Win_Texture = LoadTextureChecked(renderer, "win.png");
-
-			// Reset game variables
-			gameover = false;
-			size = 50;
-			sizeHealth = -1;
-			sizeFire = -1;
-			Character_i = (window_size - size) / 2;
-			Character_j = (window_size - size) / 2;
-			Enemy_i = 100;
-			Enemy_j = 100;
-			score_counter = 0;
-			C_Texture = A_Texture; // Reset character to original image
-
-
+			ResetGame(renderer,
+				A_Texture, B_Texture, C_Texture,
+				Health_Texture, Fire_Texture, Enemy_Texture,
+				Background_Texture, GameOver_Texture, Win_Texture,
+				window_size,
+				size, sizeHealth, sizeFire,
+				Character_i, Character_j,
+				Enemy_i, Enemy_j,
+				health_counter, score_counter,
+				counter_enemy_direction, enemy_direction,
+				gameover, winner, fire_visable);
 		}
 		//------ WINNER WINNER CHICKEN DINNER ---------------------
 		if (size >= (window_size - 100))
@@ -372,38 +410,17 @@ int main() {
 
 		}
 		if (winner && event.space) {
-			// Freeing textures
-			SDL_DestroyTexture(A_Texture);
-			SDL_DestroyTexture(B_Texture);
-			SDL_DestroyTexture(Health_Texture);
-			SDL_DestroyTexture(Fire_Texture);
-			SDL_DestroyTexture(Enemy_Texture);
-			SDL_DestroyTexture(Background_Texture);
-			SDL_DestroyTexture(GameOver_Texture);
-			SDL_DestroyTexture(Win_Texture);
-
-			// Re-loading textures
-			A_Texture = LoadTextureChecked(renderer, "BacheGherti.png");
-			B_Texture = LoadTextureChecked(renderer, "Hestler.png");
-			C_Texture = A_Texture;
-			Health_Texture = LoadTextureChecked(renderer, "Health.png");
-			Fire_Texture = LoadTextureChecked(renderer, "Fire.png");
-			Enemy_Texture = LoadTextureChecked(renderer, "Enemy.png");
-			Background_Texture = LoadTextureChecked(renderer, "background.png");
-			GameOver_Texture = LoadTextureChecked(renderer, "GameOver.png");
-			Win_Texture = LoadTextureChecked(renderer, "win.png");
-
-			// Reset game variables
-			winner = false;
-			size = 50;
-			sizeHealth = -1;
-			sizeFire = -1;
-			Character_i = (window_size - size) / 2;
-			Character_j = (window_size - size) / 2;
-			Enemy_i = 100;
-			Enemy_j = 100;
-			score_counter = 0;
-			C_Texture = A_Texture;  // Reset character to original image
+			ResetGame(renderer,
+				A_Texture, B_Texture, C_Texture,
+				Health_Texture, Fire_Texture, Enemy_Texture,
+				Background_Texture, GameOver_Texture, Win_Texture,
+				window_size,
+				size, sizeHealth, sizeFire,
+				Character_i, Character_j,
+				Enemy_i, Enemy_j,
+				health_counter, score_counter,
+				counter_enemy_direction, enemy_direction,
+				gameover, winner, fire_visable);
 		}
 
 
