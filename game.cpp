@@ -12,6 +12,10 @@ SDL_Texture* LoadTextureChecked(SDL_Renderer* ren, const char* path) {
 	return tex;
 }
 
+
+constexpr double HEALTH_GROWTH = 40.0; // px gained per health item eaten
+constexpr double FIRE_PENALTY = 40.0;  // px lost per fire item touched
+
 int main() {
 	int window_size = 700;
 
@@ -260,7 +264,7 @@ int main() {
 		if (Cy2 <= Hy || Hy2 <= Cy) collided = false;
 
 		if (collided && (size < (window_size - 100))) {
-			size += sizeHealth * 3 / log(fairness_health);
+			size += HEALTH_GROWTH;
 			sizeHealth = -1;
 
 			if (!fire_visable) {
@@ -282,7 +286,7 @@ int main() {
 
 		if (collided_fire && fire_visable && (size < (window_size - 100))) {
 
-			size -= sizeFire * 2 / log(fairness_fire);
+			size -= FIRE_PENALTY;
 			sizeFire = -1;
 			fire_visable = false;
 
