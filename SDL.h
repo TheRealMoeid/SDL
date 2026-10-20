@@ -35,11 +35,23 @@ int SDL__CreateWindow(const char* title, int width, int height) {
 
     srand(time(NULL));
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | IMG_INIT_PNG | IMG_INIT_JPG) != 0 || TTF_Init() < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
         printf("Error on SDL Initialization: %s\n", SDL_GetError());
         return 1;
     }
 
+    if (IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG) == 0) {
+        printf("Error on SDL_image Initialization: %s\n", IMG_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
+    if (TTF_Init() < 0) {
+        printf("Error on SDL_ttf Initialization: %s\n", TTF_GetError());
+        IMG_Quit();
+        SDL_Quit();
+        return 1;
+    }
     //remove old windows if exist
     if (renderer != NULL) {
         SDL_DestroyRenderer(renderer);
@@ -57,15 +69,19 @@ int SDL__CreateWindow(const char* title, int width, int height) {
         SDL_WINDOW_SHOWN);
     if (!window) {
         printf("Error on Creation of Window: %s\n", SDL_GetError());
+        TTF_Quit();
+        IMG_Quit();
         SDL_Quit();
         return 1;
     }
 
     // Create a renderer
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED );
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         printf("Error on Definition of Render Engine: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
+        TTF_Quit();
+        IMG_Quit();
         SDL_Quit();
         return 1;
     }
