@@ -57,11 +57,11 @@ C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(313,49): warning C4838: convers
 C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(313,49): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(313,55): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
 C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(313,55): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(322,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(323,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(326,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(327,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(330,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(331,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(333,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(334,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(337,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(338,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(341,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(342,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
   LINK : C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\x64\Debug\sdl.exe not found or not built by the last incremental link; performing full link
   sdl.vcxproj -> C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\x64\Debug\sdl.exe
