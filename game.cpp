@@ -25,6 +25,17 @@ bool Overlaps(const SDL_Rect& a, const SDL_Rect& b) {
 constexpr double HEALTH_GROWTH = 40.0; // px gained per health item eaten
 constexpr double FIRE_PENALTY = 40.0;  // px lost per fire item touched
 
+// B10: explicit game state. Replaces the two independent booleans
+// gameover/winner, which nothing prevented from both being true at once
+// (nothing guarded the collision/eating blocks during an ending) and which
+// duplicated the "are we actually playing" check as `!gameover && !winner`
+// at every site that needed it.
+enum class GameState {
+	Playing,
+	GameOver,
+	Victory
+};
+
 // B3: single source of truth for "start a fresh round". Replaces the two
 // near-identical restart blocks (Game Over + Win), which reset size,
 // position, enemy position and score but left health_counter, fire_visable,
@@ -46,7 +57,7 @@ void ResetGame(
 	int& Enemy_i, int& Enemy_j,
 	int& health_counter, int& score_counter,
 	int& counter_enemy_direction, int& enemy_direction,
-	bool& gameover, bool& winner, bool& fire_visable)
+	GameState& state, bool& fire_visable)
 {
 	// Freeing textures
 	SDL_DestroyTexture(A_Texture);
@@ -70,8 +81,7 @@ void ResetGame(
 	C_Texture = A_Texture; // reset character to original (small) sprite
 
 	// Reset game state
-	gameover = false;
-	winner = false;
+	state = GameState::Playing;
 	size = 50;
 	sizeHealth = -1;
 	sizeFire = -1;
@@ -137,8 +147,7 @@ int main() {
 	int score_counter = 0;
 	int counter_enemy_direction = 0;
 	int enemy_direction = 0;
-	bool gameover = false;
-	bool winner = false;
+	GameState state = GameState::Playing;
 	bool fire_visable = false;
 
 	const char* score = 0;
@@ -175,7 +184,7 @@ int main() {
 
 
 		//------------------ DrawCharacter ------------------------
-		if (!gameover && !winner) {
+		if (state == GameState::Playing) {
 			SDL_Rect rect = { Character_i, Character_j, size, size };
 			SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
 		}
@@ -186,7 +195,7 @@ int main() {
 			C_Texture = A_Texture;
 		}
 		//----------------------- ResizeCharacter --------------------------
-		if (!gameover && !winner) {
+		if (state == GameState::Playing) {
 
 			size -= 8.3 * log(size) * 0.3 * deltatime / 1000.0;
 
@@ -194,7 +203,7 @@ int main() {
 
 
 		//---------------------- Draw Enemy --------------------------------++++++++++++++++++++++++++++++++++++
-		if (!gameover && !winner) {
+		if (state == GameState::Playing) {
 			SDL_Rect rect = { Enemy_i, Enemy_j, 50, 50 };
 			SDL_RenderCopy(renderer, Enemy_Texture, NULL, &rect);
 		}
@@ -236,12 +245,12 @@ int main() {
 
 
 		//-------------------- DrawHealthBar ----------------------
-		if (!winner && !gameover) {
+		if (state == GameState::Playing) {
 			SDL_Rect rectHealthBar = { Random_Health_i, Random_Health_j, sizeHealth, sizeHealth };
 			SDL_RenderCopy(renderer, Health_Texture, NULL, &rectHealthBar);
 		}
 		//----------------------- ResizeHealthBar --------------------------
-		if (!gameover && !winner) {
+		if (state == GameState::Playing) {
 
 			sizeHealth -= 10 * deltatime / 1000.0;
 
@@ -266,7 +275,7 @@ int main() {
 
 
 		//-------------------- DrawFireBar ----------------------
-		if (fire_visable && !winner && !gameover) {
+		if (fire_visable && state == GameState::Playing) {
 			SDL_Rect rectFireBar = { Random_Fire_i,Random_Fire_j, sizeFire, sizeFire };
 			SDL_RenderCopy(renderer, Fire_Texture, NULL, &rectFireBar);
 		}
@@ -284,7 +293,7 @@ int main() {
 
 		//---- movement ---------------------------------------------
 
-		if (!gameover && !winner) { //allow only game is not over
+		if (state == GameState::Playing) { //allow only game is not over
 			if (event.up && Character_j >= 0) {
 				SDL_Rect rect = { Character_i, Character_j, size, size };
 				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
@@ -367,12 +376,12 @@ int main() {
 
 		if (collided_enemy && (size < (window_size - 100))) {
 
-			gameover = true;
+			state = GameState::GameOver;
 		}
 
 
 		//--------------------- Score -----------------------------
-		if (!gameover && !winner) {
+		if (state == GameState::Playing) {
 			string string_score = "score : " + to_string(score_counter / 60);
 			const char* score = string_score.c_str();
 			SDL__DrawText(score, 0, 0, 30, "#FF0000");
@@ -381,14 +390,14 @@ int main() {
 
 		//--------------------- GameOver --------------------------
 		if (size < 3) {
-			gameover = true;
+			state = GameState::GameOver;
 		}
-		if (gameover) {
+		if (state == GameState::GameOver) {
 			SDL_RenderCopy(renderer, GameOver_Texture, NULL, NULL);
 
 		}
 
-		if (gameover && event.space) {
+		if (state == GameState::GameOver && event.space) {
 			ResetGame(renderer,
 				A_Texture, B_Texture, C_Texture,
 				Health_Texture, Fire_Texture, Enemy_Texture,
@@ -399,17 +408,17 @@ int main() {
 				Enemy_i, Enemy_j,
 				health_counter, score_counter,
 				counter_enemy_direction, enemy_direction,
-				gameover, winner, fire_visable);
+				state, fire_visable);
 		}
 		//------ WINNER WINNER CHICKEN DINNER ---------------------
 		if (size >= (window_size - 100))
-			winner = true;
+			state = GameState::Victory;
 
-		if (winner) {
+		if (state == GameState::Victory) {
 			SDL_RenderCopy(renderer, Win_Texture, NULL, NULL);
 
 		}
-		if (winner && event.space) {
+		if (state == GameState::Victory && event.space) {
 			ResetGame(renderer,
 				A_Texture, B_Texture, C_Texture,
 				Health_Texture, Fire_Texture, Enemy_Texture,
@@ -420,7 +429,7 @@ int main() {
 				Enemy_i, Enemy_j,
 				health_counter, score_counter,
 				counter_enemy_direction, enemy_direction,
-				gameover, winner, fire_visable);
+				state, fire_visable);
 		}
 
 
