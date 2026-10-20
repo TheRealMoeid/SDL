@@ -23,44 +23,45 @@ C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(181,26): warning C4244: 'initializ
 C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\SDL.h(334,21): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
   (compiling source file 'game.cpp')
   
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(122,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(126,18): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(127,18): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(173,20): warning C4244: 'initializing': conversion from 'Uint64' to 'Uint32', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(179,48): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(179,48): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(179,54): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(179,54): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(233,26): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(240,65): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(240,65): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(240,77): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(240,77): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(263,24): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(270,58): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(270,58): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(270,68): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(270,68): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(289,49): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(289,49): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(289,55): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(289,55): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(294,49): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(294,49): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(294,55): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(294,55): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(299,49): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(299,49): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(299,55): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(299,55): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(304,49): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(304,49): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(304,55): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(304,55): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(313,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(314,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(317,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(318,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(321,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(132,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(136,18): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(137,18): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(182,20): warning C4244: 'initializing': conversion from 'Uint64' to 'Uint32', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(188,48): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(188,48): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(188,54): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(188,54): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(242,26): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(249,65): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(249,65): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(249,77): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(249,77): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(272,24): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(279,58): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(279,58): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(279,68): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(279,68): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(298,49): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(298,49): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(298,55): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(298,55): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(303,49): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(303,49): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(303,55): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(303,55): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(308,49): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(308,49): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(308,55): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(308,55): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(313,49): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(313,49): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(313,55): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(313,55): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(322,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(323,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(326,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(327,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(330,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(331,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  LINK : C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\x64\Debug\sdl.exe not found or not built by the last incremental link; performing full link
   sdl.vcxproj -> C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\x64\Debug\sdl.exe
