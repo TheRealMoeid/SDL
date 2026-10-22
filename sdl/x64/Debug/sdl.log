@@ -39,5 +39,4 @@ C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(333,11): warning C4244: 'initia
 C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(334,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(337,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\game.cpp(338,11): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-  LINK : C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\x64\Debug\sdl.exe not found or not built by the last incremental link; performing full link
   sdl.vcxproj -> C:\Users\VAHABI\Desktop\SDL\SSDDLL2\sdl\x64\Debug\sdl.exe
