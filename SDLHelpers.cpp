@@ -1,34 +1,10 @@
-#pragma once
-#define _CRT_SECURE_NO_WARNINGS
-#define SDL_MAIN_HANDLED
-#pragma comment(lib,"SDL2.lib")
-#pragma comment(lib,"SDL2_ttf.lib")
-#pragma comment(lib,"SDL2_image.lib")
+#include "SDLHelpers.hpp"   // keep as the FIRST include (_CRT_SECURE_NO_WARNINGS lives there)
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <time.h>
-#include <stdbool.h>
-#include "sdl/SDL.h"
-#include "sdl/SDL_ttf.h"
-#include "sdl/SDL_image.h"
-
+// Globals (declared extern in SDLHelpers.hpp, removed in Commit B)
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
-clock_t lastRun = clock();
-
-struct Events
-{
-    bool exit = false;
-    bool left = false;
-    bool right = false;
-    bool up = false;
-    bool down = false;
-    bool space = false;
-    bool pause = false;
-} event;
+Events event;
+static clock_t lastRun = clock();   // only SDL__Present uses this, so it is file-local now
 
 
 int SDL__CreateWindow(const char* title, int width, int height) {
@@ -59,7 +35,7 @@ int SDL__CreateWindow(const char* title, int width, int height) {
     if (window != NULL) {
         SDL_DestroyWindow(window);
     }
-    
+
 
     window = SDL_CreateWindow(title,
         SDL_WINDOWPOS_CENTERED,
@@ -90,44 +66,44 @@ int SDL__CreateWindow(const char* title, int width, int height) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black
     SDL_RenderClear(renderer);
     return 0;
-};
+}
 
-SDL_Color SDL__SetColor(const char* color){
+SDL_Color SDL__SetColor(const char* color) {
 
-        // Check if the hex string is valid
-        if (strlen(color) != 7) {
-            printf("Invalid hex color string\n");
-            return SDL_Color{ 0,0,0 };
-        }
+    // Check if the hex string is valid
+    if (strlen(color) != 7) {
+        printf("Invalid hex color string\n");
+        return SDL_Color{ 0,0,0 };
+    }
 
-        char tmp[3];
-        strncpy(tmp, color +1, 2);
-        tmp[2] = '\0';
-        int r = strtol(tmp, NULL, 16);
+    char tmp[3];
+    strncpy(tmp, color + 1, 2);
+    tmp[2] = '\0';
+    int r = strtol(tmp, NULL, 16);
 
-        strncpy(tmp, color + 3, 2);
-        tmp[2] = '\0';
-        int g = strtol(tmp, NULL, 16);
+    strncpy(tmp, color + 3, 2);
+    tmp[2] = '\0';
+    int g = strtol(tmp, NULL, 16);
 
-        strncpy(tmp, color + 5, 2);
-        tmp[2] = '\0';
-        int b = strtol(tmp, NULL, 16);
+    strncpy(tmp, color + 5, 2);
+    tmp[2] = '\0';
+    int b = strtol(tmp, NULL, 16);
 
-        SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+    SDL_SetRenderDrawColor(renderer, r, g, b, 255);
 
-        return SDL_Color{ (unsigned char) r, (unsigned char) g, (unsigned char) b };
+    return SDL_Color{ (unsigned char)r, (unsigned char)g, (unsigned char)b };
 }
 
 void SDL__DrawPoint(int x, int y, const char* color) {
 
     SDL__SetColor(color);
-    SDL_RenderDrawPoint(renderer,x, y);
+    SDL_RenderDrawPoint(renderer, x, y);
 }
 
-void SDL__DrawLine(int x1, int y1, int x2, int y2,int width, const char* color) {
+void SDL__DrawLine(int x1, int y1, int x2, int y2, int width, const char* color) {
 
     SDL__SetColor(color);
-    
+
     float dx = x2 - x1;
     float dy = y2 - y1;
     float length = sqrt(dx * dx + dy * dy);
@@ -139,8 +115,8 @@ void SDL__DrawLine(int x1, int y1, int x2, int y2,int width, const char* color) 
     // Draw multiple lines with small width
     for (int i = -width / 2; i <= width / 2; ++i) {
         int _x = i * dx;
-        int _y = - i * dy;
-        SDL_RenderDrawLine(renderer, x1+_x, y1+_y, x2+_x, y2+_y);
+        int _y = -i * dy;
+        SDL_RenderDrawLine(renderer, x1 + _x, y1 + _y, x2 + _x, y2 + _y);
     }
 }
 
@@ -151,10 +127,10 @@ void SDL__DrawRect(int x, int y, int w, int h, int width, const char* color) {
     for (int i = -width / 2; i <= width / 2; ++i) {
 
         SDL_Rect rect;
-        rect.x = x+i;
+        rect.x = x + i;
         rect.y = y + i;
-        rect.w = w - 2*i;
-        rect.h = h - 2*i;
+        rect.w = w - 2 * i;
+        rect.h = h - 2 * i;
 
         SDL_RenderDrawRect(renderer, &rect);
     }
@@ -176,8 +152,8 @@ void SDL__DrawCircle(int cx, int cy, int radius, int width, const char* color)
 {
     SDL__SetColor(color);
 
-    for (int y = -(radius+width+1); y <= (radius + width+1); ++y) {
-        for (int x = -(radius + width+1); x <= (radius + width+1); ++x) {
+    for (int y = -(radius + width + 1); y <= (radius + width + 1); ++y) {
+        for (int x = -(radius + width + 1); x <= (radius + width + 1); ++x) {
             int distance = sqrt(x * x + y * y);
             if (distance >= radius - width / 2 && distance <= radius + width / 2) {
                 SDL_RenderDrawPoint(renderer, cx + x, cy + y);
@@ -199,7 +175,7 @@ void SDL__FillCircle(int cx, int cy, int radius, const char* color) {
     }
 }
 
-void SDL__DrawText(const char* text, int x,int y, int size, const char* color) {
+void SDL__DrawText(const char* text, int x, int y, int size, const char* color) {
 
     // Load a font
     TTF_Font* font = TTF_OpenFont("consola.ttf", size);
@@ -258,7 +234,7 @@ int SDL__DrawImage(const char* path, int x, int y, int w, int h) {
 }
 
 void SDL__Clear(const char* color) {
-    SDL__SetColor(color); 
+    SDL__SetColor(color);
     SDL_RenderClear(renderer);
 }
 
@@ -273,7 +249,7 @@ Events SDL__Events() {
             event.exit = true;
             return event;
         }
-      
+
         if (sdl_event.type == SDL_KEYDOWN) {
 
             switch (sdl_event.key.keysym.sym) {
@@ -318,7 +294,7 @@ Events SDL__Events() {
             case SDLK_p:
                 event.pause = false;
                 break;
-            
+
             }
 
         }
