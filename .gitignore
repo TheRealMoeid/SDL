@@ -1,1 +1,23 @@
+# Visual Studio build output
+Debug/
+Release/
+x64/
+x86/
 .vs/
+
+# Build artifacts (if they ever end up outside x64/x86)
+*.obj
+*.ilk
+*.pdb
+*.log
+*.tlog/
+*.idb
+*.exp
+*.lib.recipe
+
+# Visual Studio user-specific files
+*.vcxproj.user
+*.suo
+*.user
+*.sdf
+*.opensdf
