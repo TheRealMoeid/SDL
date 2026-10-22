@@ -58,7 +58,7 @@ void ResetGame(
 	double& size, double& sizeHealth, double& sizeFire,
 	double& Character_i, double& Character_j,
 	double& Enemy_i, double& Enemy_j,
-	int& health_counter, int& score_counter,
+	int& health_counter, double& score_time,
 	double& counter_enemy_direction, int& enemy_direction,
 	GameState& state, bool& fire_visable)
 {
@@ -92,7 +92,7 @@ void ResetGame(
 	Character_j = (window_size - (int)size) / 2;
 	Enemy_i = 100;
 	Enemy_j = 100;
-	score_counter = 0;
+	score_time = 0;
 	health_counter = 0;
 	fire_visable = false;
 	counter_enemy_direction = 0;
@@ -147,7 +147,7 @@ int main() {
 	int fairness_health;
 	int fairness_fire;
 	int health_counter = 0;
-	int score_counter = 0;
+	double score_time = 0.0;
 	double counter_enemy_direction = 0.0; // seconds since last direction change
 	int enemy_direction = 0; // stays int, just a 1-4 selector
 	GameState state = GameState::Playing;
@@ -395,10 +395,10 @@ int main() {
 
 		//--------------------- Score -----------------------------
 		if (state == GameState::Playing) {
-			string string_score = "score : " + to_string(score_counter / 60);
+			score_time += deltatime / 1000.0;
+			string string_score = "score : " + to_string((int)score_time);
 			const char* score = string_score.c_str();
 			SDL__DrawText(score, 0, 0, 30, "#FF0000");
-			score_counter += 1;
 		}
 
 		//--------------------- GameOver --------------------------
@@ -419,7 +419,7 @@ int main() {
 				size, sizeHealth, sizeFire,
 				Character_i, Character_j,
 				Enemy_i, Enemy_j,
-				health_counter, score_counter,
+				health_counter, score_time,
 				counter_enemy_direction, enemy_direction,
 				state, fire_visable);
 		}
@@ -440,7 +440,7 @@ int main() {
 				size, sizeHealth, sizeFire,
 				Character_i, Character_j,
 				Enemy_i, Enemy_j,
-				health_counter, score_counter,
+				health_counter, score_time,
 				counter_enemy_direction, enemy_direction,
 				state, fire_visable);
 		}
