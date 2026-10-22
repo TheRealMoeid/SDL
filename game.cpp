@@ -25,6 +25,8 @@ bool Overlaps(const SDL_Rect& a, const SDL_Rect& b) {
 constexpr double HEALTH_GROWTH = 40.0; // px gained per health item eaten
 constexpr double FIRE_PENALTY = 40.0;  // px lost per fire item touched
 constexpr double PLAYER_SPEED = 180.0; // px/sec, player speed
+constexpr double ENEMY_SPEED = 60.0; // px/sec, matches old 1px/frame @60fps
+constexpr double ENEMY_DIRECTION_INTERVAL = 70.0 / 60.0; // seconds, matches old 70-frame timer @60fps
 
 // B10: explicit game state. Replaces the two independent booleans
 // gameover/winner, which nothing prevented from both being true at once
@@ -55,9 +57,9 @@ void ResetGame(
 	int window_size,
 	double& size, double& sizeHealth, double& sizeFire,
 	double& Character_i, double& Character_j,
-	int& Enemy_i, int& Enemy_j,
+	double& Enemy_i, double& Enemy_j,
 	int& health_counter, int& score_counter,
-	int& counter_enemy_direction, int& enemy_direction,
+	double& counter_enemy_direction, int& enemy_direction,
 	GameState& state, bool& fire_visable)
 {
 	// Freeing textures
@@ -136,8 +138,8 @@ int main() {
 	double sizeFire = 0;
 	double Character_i = (window_size - size) / 2;
 	double Character_j = (window_size - size) / 2;
-	int Enemy_i = 100;
-	int Enemy_j = 100;
+	double Enemy_i = 100;
+	double Enemy_j = 100;
 	int Random_Health_i;
 	int Random_Health_j;
 	int Random_Fire_i = 0;
@@ -146,8 +148,8 @@ int main() {
 	int fairness_fire;
 	int health_counter = 0;
 	int score_counter = 0;
-	int counter_enemy_direction = 0;
-	int enemy_direction = 0;
+	double counter_enemy_direction = 0.0; // seconds since last direction change
+	int enemy_direction = 0; // stays int, just a 1-4 selector
 	GameState state = GameState::Playing;
 	bool fire_visable = false;
 
@@ -197,27 +199,28 @@ int main() {
 
 		//---------------------- Draw Enemy --------------------------------++++++++++++++++++++++++++++++++++++
 		if (state == GameState::Playing) {
-			SDL_Rect rect = { Enemy_i, Enemy_j, 50, 50 };
+			SDL_Rect rect = { (int)Enemy_i, (int)Enemy_j, 50, 50 };
 			SDL_RenderCopy(renderer, Enemy_Texture, NULL, &rect);
 		}
 		//---------------- Random movement for enemy -----------------------++++++++++++++++++++++++++++++++++++
-		if ((counter_enemy_direction % 70 == 0)) {
-			enemy_direction = (rand() % (4)) + 1;//  1 mean UP       2 mean DOWN      3 mean RIGHT      4 mean LEFT
+		counter_enemy_direction += deltatime / 1000.0;
+		if (counter_enemy_direction >= ENEMY_DIRECTION_INTERVAL) {
+			enemy_direction = (rand() % (4)) + 1;
+			counter_enemy_direction = 0.0;
 		}
 
-		counter_enemy_direction++;
-
-		if (enemy_direction == 1 && (0 < Enemy_j - 1) && (Enemy_j < (window_size - 50))) {
-			Enemy_j -= 1;
+		double enemy_step = ENEMY_SPEED * deltatime / 1000.0;
+		if (enemy_direction == 1 && (0 < Enemy_j - enemy_step) && (Enemy_j < (window_size - 50))) {
+			Enemy_j -= enemy_step;
 		}
-		if (enemy_direction == 2 && (0 < Enemy_j) && (Enemy_j + 1 < (window_size - 50))) {
-			Enemy_j += 1;
+		if (enemy_direction == 2 && (0 < Enemy_j) && (Enemy_j + enemy_step < (window_size - 50))) {
+			Enemy_j += enemy_step;
 		}
-		if (enemy_direction == 3 && (0 < Enemy_i) && (Enemy_i + 1 < (window_size - 50))) {
-			Enemy_i += 1;
+		if (enemy_direction == 3 && (0 < Enemy_i) && (Enemy_i + enemy_step < (window_size - 50))) {
+			Enemy_i += enemy_step;
 		}
-		if (enemy_direction == 4 && (0 < Enemy_i - 1) && (Enemy_i < (window_size - 50))) {
-			Enemy_i -= 1;
+		if (enemy_direction == 4 && (0 < Enemy_i - enemy_step) && (Enemy_i < (window_size - 50))) {
+			Enemy_i -= enemy_step;
 		}
 
 		//---- random number for health bar ------------------------
@@ -228,7 +231,7 @@ int main() {
 				Random_Health_j = rand() % (window_size - 50);
 				candidate = { Random_Health_i, Random_Health_j, 50, 50 };
 			} while (Overlaps(candidate, SDL_Rect{ (int)Character_i, (int)Character_j, (int)size, (int)size }) ||
-				Overlaps(candidate, SDL_Rect{ Enemy_i, Enemy_j, 50, 50 }) ||
+				Overlaps(candidate, SDL_Rect{ (int)Enemy_i, (int)Enemy_j, 50, 50 }) ||
 				(fire_visable && Overlaps(candidate, SDL_Rect{ Random_Fire_i, Random_Fire_j, (int)sizeFire, (int)sizeFire })));
 
 			sizeHealth = 50;
@@ -257,7 +260,7 @@ int main() {
 				Random_Fire_i = rand() % (window_size - 50);
 				Random_Fire_j = rand() % (window_size - 50);
 				candidate = { Random_Fire_i, Random_Fire_j, 50, 50 };
-			} while (Overlaps(candidate, SDL_Rect{ Enemy_i, Enemy_j, 50, 50 }) ||
+			} while (Overlaps(candidate, SDL_Rect{ (int)Enemy_i, (int)Enemy_j, 50, 50 }) ||
 				Overlaps(candidate, SDL_Rect{ (int)Character_i, (int)Character_j, (int)size, (int)size }) ||
 				(sizeHealth > 0 && Overlaps(candidate, SDL_Rect{ Random_Health_i, Random_Health_j, (int)sizeHealth, (int)sizeHealth })));
 
@@ -333,10 +336,10 @@ int main() {
 		int Fy = Random_Fire_j;
 		int Fx2 = Random_Fire_i + sizeFire;
 		int Fy2 = Random_Fire_j + sizeFire;
-		int Ex = Enemy_i;
-		int Ey = Enemy_j;
-		int Ex2 = Enemy_i + 50;
-		int Ey2 = Enemy_j + 50;
+		int Ex = (int)Enemy_i;
+		int Ey = (int)Enemy_j;
+		int Ex2 = (int)Enemy_i + 50;
+		int Ey2 = (int)Enemy_j + 50;
 
 
 		//------------------- EatingHealthBar ---------------------
