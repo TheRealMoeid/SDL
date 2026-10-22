@@ -101,11 +101,15 @@ void ResetGame(
 
 int main() {
 	int window_size = 700;
+	GameContext ctx;
 
-	if (SDL__CreateWindow("Square Baby", window_size, window_size) != 0) {
+	if (SDL__CreateWindow(ctx, "Square Baby", window_size, window_size) != 0) {
 		SDL_Log("Failed to initialize SDL/window: %s", SDL_GetError());
 		return 1;
 	}
+
+	SDL_Renderer* renderer = ctx.renderer;
+
 	Uint64 pasttime = SDL_GetTicks();
 	//-------------Textures--------------------------
 	SDL_Texture* A_Texture = NULL;
@@ -162,7 +166,7 @@ int main() {
 
 
 		//---- get events and check for exit condition -------------
-		event = SDL__Events();
+		event = SDL__Events(ctx);
 		if (event.exit) {
 			break;
 		}
@@ -398,7 +402,7 @@ int main() {
 			score_time += deltatime / 1000.0;
 			string string_score = "score : " + to_string((int)score_time);
 			const char* score = string_score.c_str();
-			SDL__DrawText(score, 0, 0, 30, "#FF0000");
+			SDL__DrawText(ctx, score, 0, 0, 30, "#FF0000");
 		}
 
 		//--------------------- GameOver --------------------------
@@ -454,6 +458,6 @@ int main() {
 
 	}
 
-	SDL__Destroy();
+	SDL__Destroy(ctx);
 	return 0;
 }

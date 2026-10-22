@@ -1,13 +1,6 @@
-#include "SDLHelpers.hpp"   // keep as the FIRST include (_CRT_SECURE_NO_WARNINGS lives there)
+#include "SDLHelpers.hpp"   // keep this as the first include (_CRT_SECURE_NO_WARNINGS lives there)
 
-// Globals (declared extern in SDLHelpers.hpp, removed in Commit B)
-SDL_Window* window = NULL;
-SDL_Renderer* renderer = NULL;
-Events event;
-static clock_t lastRun = clock();   // only SDL__Present uses this, so it is file-local now
-
-
-int SDL__CreateWindow(const char* title, int width, int height) {
+int SDL__CreateWindow(GameContext& ctx, const char* title, int width, int height) {
 
     srand(time(NULL));
 
@@ -29,21 +22,21 @@ int SDL__CreateWindow(const char* title, int width, int height) {
         return 1;
     }
     //remove old windows if exist
-    if (renderer != NULL) {
-        SDL_DestroyRenderer(renderer);
+    if (ctx.renderer != NULL) {
+        SDL_DestroyRenderer(ctx.renderer);
     }
-    if (window != NULL) {
-        SDL_DestroyWindow(window);
+    if (ctx.window != NULL) {
+        SDL_DestroyWindow(ctx.window);
     }
 
 
-    window = SDL_CreateWindow(title,
+    ctx.window = SDL_CreateWindow(title,
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         width,
         height,
         SDL_WINDOW_SHOWN);
-    if (!window) {
+    if (!ctx.window) {
         printf("Error on Creation of Window: %s\n", SDL_GetError());
         TTF_Quit();
         IMG_Quit();
@@ -52,10 +45,10 @@ int SDL__CreateWindow(const char* title, int width, int height) {
     }
 
     // Create a renderer
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (!renderer) {
+    ctx.renderer = SDL_CreateRenderer(ctx.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!ctx.renderer) {
         printf("Error on Definition of Render Engine: %s\n", SDL_GetError());
-        SDL_DestroyWindow(window);
+        SDL_DestroyWindow(ctx.window);
         TTF_Quit();
         IMG_Quit();
         SDL_Quit();
@@ -63,12 +56,12 @@ int SDL__CreateWindow(const char* title, int width, int height) {
     }
 
     // Set background color
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black
-    SDL_RenderClear(renderer);
+    SDL_SetRenderDrawColor(ctx.renderer, 0, 0, 0, 255); // Black
+    SDL_RenderClear(ctx.renderer);
     return 0;
 }
 
-SDL_Color SDL__SetColor(const char* color) {
+SDL_Color SDL__SetColor(GameContext& ctx, const char* color) {
 
     // Check if the hex string is valid
     if (strlen(color) != 7) {
@@ -89,20 +82,20 @@ SDL_Color SDL__SetColor(const char* color) {
     tmp[2] = '\0';
     int b = strtol(tmp, NULL, 16);
 
-    SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+    SDL_SetRenderDrawColor(ctx.renderer, r, g, b, 255);
 
     return SDL_Color{ (unsigned char)r, (unsigned char)g, (unsigned char)b };
 }
 
-void SDL__DrawPoint(int x, int y, const char* color) {
+void SDL__DrawPoint(GameContext& ctx, int x, int y, const char* color) {
 
-    SDL__SetColor(color);
-    SDL_RenderDrawPoint(renderer, x, y);
+    SDL__SetColor(ctx, color);
+    SDL_RenderDrawPoint(ctx.renderer, x, y);
 }
 
-void SDL__DrawLine(int x1, int y1, int x2, int y2, int width, const char* color) {
+void SDL__DrawLine(GameContext& ctx, int x1, int y1, int x2, int y2, int width, const char* color) {
 
-    SDL__SetColor(color);
+    SDL__SetColor(ctx, color);
 
     float dx = x2 - x1;
     float dy = y2 - y1;
@@ -116,13 +109,13 @@ void SDL__DrawLine(int x1, int y1, int x2, int y2, int width, const char* color)
     for (int i = -width / 2; i <= width / 2; ++i) {
         int _x = i * dx;
         int _y = -i * dy;
-        SDL_RenderDrawLine(renderer, x1 + _x, y1 + _y, x2 + _x, y2 + _y);
+        SDL_RenderDrawLine(ctx.renderer, x1 + _x, y1 + _y, x2 + _x, y2 + _y);
     }
 }
 
-void SDL__DrawRect(int x, int y, int w, int h, int width, const char* color) {
+void SDL__DrawRect(GameContext& ctx, int x, int y, int w, int h, int width, const char* color) {
 
-    SDL__SetColor(color);
+    SDL__SetColor(ctx, color);
 
     for (int i = -width / 2; i <= width / 2; ++i) {
 
@@ -132,11 +125,11 @@ void SDL__DrawRect(int x, int y, int w, int h, int width, const char* color) {
         rect.w = w - 2 * i;
         rect.h = h - 2 * i;
 
-        SDL_RenderDrawRect(renderer, &rect);
+        SDL_RenderDrawRect(ctx.renderer, &rect);
     }
 }
 
-void SDL__FillRect(int x, int y, int w, int h, const char* color) {
+void SDL__FillRect(GameContext& ctx, int x, int y, int w, int h, const char* color) {
 
     SDL_Rect rect;
     rect.x = x;
@@ -144,38 +137,38 @@ void SDL__FillRect(int x, int y, int w, int h, const char* color) {
     rect.w = w;
     rect.h = h;
 
-    SDL__SetColor(color);
-    SDL_RenderFillRect(renderer, &rect);
+    SDL__SetColor(ctx, color);
+    SDL_RenderFillRect(ctx.renderer, &rect);
 }
 
-void SDL__DrawCircle(int cx, int cy, int radius, int width, const char* color)
+void SDL__DrawCircle(GameContext& ctx, int cx, int cy, int radius, int width, const char* color)
 {
-    SDL__SetColor(color);
+    SDL__SetColor(ctx, color);
 
     for (int y = -(radius + width + 1); y <= (radius + width + 1); ++y) {
         for (int x = -(radius + width + 1); x <= (radius + width + 1); ++x) {
             int distance = sqrt(x * x + y * y);
             if (distance >= radius - width / 2 && distance <= radius + width / 2) {
-                SDL_RenderDrawPoint(renderer, cx + x, cy + y);
+                SDL_RenderDrawPoint(ctx.renderer, cx + x, cy + y);
             }
         }
     }
 }
 
-void SDL__FillCircle(int cx, int cy, int radius, const char* color) {
+void SDL__FillCircle(GameContext& ctx, int cx, int cy, int radius, const char* color) {
 
-    SDL__SetColor(color);
+    SDL__SetColor(ctx, color);
 
     for (int y = -radius; y <= radius; ++y) {
         for (int x = -radius; x <= radius; ++x) {
             if (x * x + y * y <= radius * radius) {
-                SDL_RenderDrawPoint(renderer, cx + x, cy + y);
+                SDL_RenderDrawPoint(ctx.renderer, cx + x, cy + y);
             }
         }
     }
 }
 
-void SDL__DrawText(const char* text, int x, int y, int size, const char* color) {
+void SDL__DrawText(GameContext& ctx, const char* text, int x, int y, int size, const char* color) {
 
     // Load a font
     TTF_Font* font = TTF_OpenFont("consola.ttf", size);
@@ -185,14 +178,14 @@ void SDL__DrawText(const char* text, int x, int y, int size, const char* color) 
     }
 
     // Create a text surface
-    SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text, SDL__SetColor(color));
+    SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text, SDL__SetColor(ctx, color));
     if (!surface) {
         printf("Error on Rendering Text: %s\n", TTF_GetError());
         return;
     }
 
     // Create a texture from the surface
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
     SDL_FreeSurface(surface);
 
     int text_width, text_height;
@@ -200,12 +193,12 @@ void SDL__DrawText(const char* text, int x, int y, int size, const char* color) 
     SDL_Rect dest_rect = { x, y, text_width, text_height };
 
     // Render the text within the specified region
-    SDL_RenderCopy(renderer, texture, NULL, &dest_rect);
+    SDL_RenderCopy(ctx.renderer, texture, NULL, &dest_rect);
     SDL_DestroyTexture(texture);
     TTF_CloseFont(font);
 }
 
-int SDL__DrawImage(const char* path, int x, int y, int w, int h) {
+int SDL__DrawImage(GameContext& ctx, const char* path, int x, int y, int w, int h) {
 
     // Load the image
     SDL_Surface* surface = IMG_Load(path);
@@ -214,7 +207,7 @@ int SDL__DrawImage(const char* path, int x, int y, int w, int h) {
         return 1;
     }
 
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
     SDL_FreeSurface(surface);
 
     // Get the image dimensions
@@ -225,20 +218,20 @@ int SDL__DrawImage(const char* path, int x, int y, int w, int h) {
     SDL_Rect dst_rect = { x, y, w, h };
 
     // Render the image
-    SDL_RenderCopy(renderer, texture, NULL, &dst_rect);
-    //SDL_RenderPresent(renderer);
+    SDL_RenderCopy(ctx.renderer, texture, NULL, &dst_rect);
+    //SDL_RenderPresent(ctx.renderer);
 
     // ... (Cleanup as before)
 
     return 0;
 }
 
-void SDL__Clear(const char* color) {
-    SDL__SetColor(color);
-    SDL_RenderClear(renderer);
+void SDL__Clear(GameContext& ctx, const char* color) {
+    SDL__SetColor(ctx, color);
+    SDL_RenderClear(ctx.renderer);
 }
 
-Events SDL__Events() {
+Events SDL__Events(GameContext& ctx) {
 
     SDL_Event sdl_event;
 
@@ -246,30 +239,30 @@ Events SDL__Events() {
     {
         if (sdl_event.type == SDL_QUIT)
         {
-            event.exit = true;
-            return event;
+            ctx.events.exit = true;
+            return ctx.events;
         }
 
         if (sdl_event.type == SDL_KEYDOWN) {
 
             switch (sdl_event.key.keysym.sym) {
             case SDLK_UP:
-                event.up = true;
+                ctx.events.up = true;
                 break;
             case SDLK_DOWN:
-                event.down = true;
+                ctx.events.down = true;
                 break;
             case SDLK_LEFT:
-                event.left = true;
+                ctx.events.left = true;
                 break;
             case SDLK_RIGHT:
-                event.right = true;
+                ctx.events.right = true;
                 break;
             case SDLK_SPACE:
-                event.space = true;
+                ctx.events.space = true;
                 break;
             case SDLK_p:
-                event.pause = true;
+                ctx.events.pause = true;
             }
         }
 
@@ -277,22 +270,22 @@ Events SDL__Events() {
 
             switch (sdl_event.key.keysym.sym) {
             case SDLK_UP:
-                event.up = false;
+                ctx.events.up = false;
                 break;
             case SDLK_DOWN:
-                event.down = false;
+                ctx.events.down = false;
                 break;
             case SDLK_LEFT:
-                event.left = false;
+                ctx.events.left = false;
                 break;
             case SDLK_RIGHT:
-                event.right = false;
+                ctx.events.right = false;
                 break;
             case SDLK_SPACE:
-                event.space = false;
+                ctx.events.space = false;
                 break;
             case SDLK_p:
-                event.pause = false;
+                ctx.events.pause = false;
                 break;
 
             }
@@ -300,29 +293,31 @@ Events SDL__Events() {
         }
     }
 
-    return event;
+    return ctx.events;
 }
 
-void SDL__Present(int delay) {
+void SDL__Present(GameContext& ctx, int delay) {
 
-    SDL_RenderPresent(renderer);
+    SDL_RenderPresent(ctx.renderer);
 
-    int executeTime = ((double)(clock() - lastRun) / CLOCKS_PER_SEC) * 1000;
+    int executeTime = ((double)(clock() - ctx.lastRun) / CLOCKS_PER_SEC) * 1000;
     delay -= executeTime;
     if (delay > 0) {
         SDL_Delay(delay);
     }
 
-    lastRun = clock();
+    ctx.lastRun = clock();
 }
 
-void SDL__Destroy() {
+void SDL__Destroy(GameContext& ctx) {
 
-    if (renderer) {
-        SDL_DestroyRenderer(renderer);
+    if (ctx.renderer) {
+        SDL_DestroyRenderer(ctx.renderer);
+        ctx.renderer = nullptr;
     }
-    if (window) {
-        SDL_DestroyWindow(window);
+    if (ctx.window) {
+        SDL_DestroyWindow(ctx.window);
+        ctx.window = nullptr;
     }
     TTF_Quit();
     SDL_Quit();

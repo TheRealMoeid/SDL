@@ -26,22 +26,25 @@ struct Events
     bool pause = false;
 };
 
-// Globals: defined in SDLHelpers.cpp (removed in Commit B)
-extern SDL_Window* window;
-extern SDL_Renderer* renderer;
-extern Events event;
+struct GameContext
+{
+    SDL_Window* window = nullptr;
+    SDL_Renderer* renderer = nullptr;
+    Events        events;                // key state has to persist between calls
+    clock_t       lastRun = clock();    // only SDL__Present uses it
+};
 
-int       SDL__CreateWindow(const char* title, int width, int height);
-SDL_Color SDL__SetColor(const char* color);
-void      SDL__DrawPoint(int x, int y, const char* color);
-void      SDL__DrawLine(int x1, int y1, int x2, int y2, int width, const char* color);
-void      SDL__DrawRect(int x, int y, int w, int h, int width, const char* color);
-void      SDL__FillRect(int x, int y, int w, int h, const char* color);
-void      SDL__DrawCircle(int cx, int cy, int radius, int width, const char* color);
-void      SDL__FillCircle(int cx, int cy, int radius, const char* color);
-void      SDL__DrawText(const char* text, int x, int y, int size, const char* color);
-int       SDL__DrawImage(const char* path, int x, int y, int w, int h);
-void      SDL__Clear(const char* color);
-Events    SDL__Events();
-void      SDL__Present(int delay);
-void      SDL__Destroy();
+int       SDL__CreateWindow(GameContext& ctx, const char* title, int width, int height);
+SDL_Color SDL__SetColor(GameContext& ctx, const char* color);
+void      SDL__DrawPoint(GameContext& ctx, int x, int y, const char* color);
+void      SDL__DrawLine(GameContext& ctx, int x1, int y1, int x2, int y2, int width, const char* color);
+void      SDL__DrawRect(GameContext& ctx, int x, int y, int w, int h, int width, const char* color);
+void      SDL__FillRect(GameContext& ctx, int x, int y, int w, int h, const char* color);
+void      SDL__DrawCircle(GameContext& ctx, int cx, int cy, int radius, int width, const char* color);
+void      SDL__FillCircle(GameContext& ctx, int cx, int cy, int radius, const char* color);
+void      SDL__DrawText(GameContext& ctx, const char* text, int x, int y, int size, const char* color);
+int       SDL__DrawImage(GameContext& ctx, const char* path, int x, int y, int w, int h);
+void      SDL__Clear(GameContext& ctx, const char* color);
+Events    SDL__Events(GameContext& ctx);
+void      SDL__Present(GameContext& ctx, int delay);
+void      SDL__Destroy(GameContext& ctx);
