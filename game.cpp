@@ -24,6 +24,7 @@ bool Overlaps(const SDL_Rect& a, const SDL_Rect& b) {
 
 constexpr double HEALTH_GROWTH = 40.0; // px gained per health item eaten
 constexpr double FIRE_PENALTY = 40.0;  // px lost per fire item touched
+constexpr double PLAYER_SPEED = 180.0; // px/sec, player speed
 
 // B10: explicit game state. Replaces the two independent booleans
 // gameover/winner, which nothing prevented from both being true at once
@@ -53,7 +54,7 @@ void ResetGame(
 	SDL_Texture*& Background_Texture, SDL_Texture*& GameOver_Texture, SDL_Texture*& Win_Texture,
 	int window_size,
 	double& size, double& sizeHealth, double& sizeFire,
-	int& Character_i, int& Character_j,
+	double& Character_i, double& Character_j,
 	int& Enemy_i, int& Enemy_j,
 	int& health_counter, int& score_counter,
 	int& counter_enemy_direction, int& enemy_direction,
@@ -133,8 +134,8 @@ int main() {
 	double size = 50;
 	double sizeHealth = 0;
 	double sizeFire = 0;
-	int Character_i = (window_size - size) / 2;
-	int Character_j = (window_size - size) / 2;
+	double Character_i = (window_size - size) / 2;
+	double Character_j = (window_size - size) / 2;
 	int Enemy_i = 100;
 	int Enemy_j = 100;
 	int Random_Health_i;
@@ -177,7 +178,7 @@ int main() {
 
 		//------------------ DrawCharacter ------------------------
 		if (state == GameState::Playing) {
-			SDL_Rect rect = { Character_i, Character_j, size, size };
+			SDL_Rect rect = { (int)Character_i, (int)Character_j, (int)size, (int)size };
 			SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
 		}
 		if (size > 100) {
@@ -226,7 +227,7 @@ int main() {
 				Random_Health_i = rand() % (window_size - 50);
 				Random_Health_j = rand() % (window_size - 50);
 				candidate = { Random_Health_i, Random_Health_j, 50, 50 };
-			} while (Overlaps(candidate, SDL_Rect{ Character_i, Character_j, (int)size, (int)size }) ||
+			} while (Overlaps(candidate, SDL_Rect{ (int)Character_i, (int)Character_j, (int)size, (int)size }) ||
 				Overlaps(candidate, SDL_Rect{ Enemy_i, Enemy_j, 50, 50 }) ||
 				(fire_visable && Overlaps(candidate, SDL_Rect{ Random_Fire_i, Random_Fire_j, (int)sizeFire, (int)sizeFire })));
 
@@ -257,7 +258,7 @@ int main() {
 				Random_Fire_j = rand() % (window_size - 50);
 				candidate = { Random_Fire_i, Random_Fire_j, 50, 50 };
 			} while (Overlaps(candidate, SDL_Rect{ Enemy_i, Enemy_j, 50, 50 }) ||
-				Overlaps(candidate, SDL_Rect{ Character_i, Character_j, (int)size, (int)size }) ||
+				Overlaps(candidate, SDL_Rect{ (int)Character_i, (int)Character_j, (int)size, (int)size }) ||
 				(sizeHealth > 0 && Overlaps(candidate, SDL_Rect{ Random_Health_i, Random_Health_j, (int)sizeHealth, (int)sizeHealth })));
 
 			sizeFire = 50;
@@ -287,32 +288,32 @@ int main() {
 
 		if (state == GameState::Playing) { //allow only game is not over
 			if (event.up) {
-				SDL_Rect rect = { Character_i, Character_j, size, size };
+				SDL_Rect rect = { (int)Character_i, (int)Character_j, (int)size, (int)size };
 				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
-				Character_j -= 3;
+				Character_j -= PLAYER_SPEED * deltatime / 1000.0;
 			}
 			if (event.right) {
-				SDL_Rect rect = { Character_i, Character_j, size, size };
+				SDL_Rect rect = { (int)Character_i, (int)Character_j, (int)size, (int)size };
 				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
-				Character_i += 3;
+				Character_i += PLAYER_SPEED * deltatime / 1000.0;
 			}
 			if (event.down) {
-				SDL_Rect rect = { Character_i, Character_j, size, size };
+				SDL_Rect rect = { (int)Character_i, (int)Character_j, (int)size, (int)size };
 				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
-				Character_j += 3;
+				Character_j += PLAYER_SPEED * deltatime / 1000.0;
 			}
 			if (event.left) {
-				SDL_Rect rect = { Character_i, Character_j, size, size };
+				SDL_Rect rect = { (int)Character_i, (int)Character_j, (int)size, (int)size };
 				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
-				Character_i -= 3;
+				Character_i -= PLAYER_SPEED * deltatime / 1000.0;
 			}
 
 			// B8: clamp after moving instead of only gating the step
 			// beforehand — the old `Character_j >= 0` / `Character_i <
 			// window_size - size` guards still let a 3px step overshoot
 			// by up to 2px on any edge.
-			int max_i = window_size - (int)size;
-			int max_j = window_size - (int)size;
+			double max_i = window_size - size;
+			double max_j = window_size - size;
 			if (Character_i < 0) Character_i = 0;
 			if (Character_i > max_i) Character_i = max_i;
 			if (Character_j < 0) Character_j = 0;
@@ -320,10 +321,10 @@ int main() {
 		}
 
 		//------------ CornersOfCharacterAndHealthBarAndFireBarAndEnemy -------------
-		int Cx = Character_i;
-		int Cy = Character_j;
-		int Cx2 = Character_i + size;
-		int Cy2 = Character_j + size;
+		int Cx = (int)Character_i;
+		int Cy = (int)Character_j;
+		int Cx2 = (int)Character_i + (int)size;
+		int Cy2 = (int)Character_j + (int)size;
 		int Hx = Random_Health_i;
 		int Hy = Random_Health_j;
 		int Hx2 = Random_Health_i + sizeHealth;
@@ -350,8 +351,8 @@ int main() {
 			// B8: growing can push an edge-hugging player partly outside
 			// the window; clamp immediately rather than waiting for next
 			// frame's movement-clamp to catch it.
-			if (Character_i > window_size - (int)size) Character_i = window_size - (int)size;
-			if (Character_j > window_size - (int)size) Character_j = window_size - (int)size;
+			if (Character_i > window_size - size) Character_i = window_size - size;
+			if (Character_j > window_size - size) Character_j = window_size - size;
 
 			if (!fire_visable) {
 				health_counter++;
