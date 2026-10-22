@@ -153,15 +153,7 @@ int main() {
 	const char* score = 0;
 
 
-
-	SDL_DisplayMode current;
-	Uint32 fps = 16; // fallback: ~60fps frame time in ms
-	if (SDL_GetCurrentDisplayMode(0, &current) == 0 && current.refresh_rate > 0) {
-		fps = 1000 / current.refresh_rate;
-	}
-	else {
-		SDL_Log("Could not get display refresh rate, defaulting to 60fps timing: %s", SDL_GetError());
-	}
+	
 
 	while (true) {
 
@@ -454,8 +446,7 @@ int main() {
 		SDL_RenderPresent(renderer);
 
 
-		//----------------- WaitForUselessRender ------------------
-		if (deltatime < fps) SDL_Delay(fps - deltatime);
+		
 
 	}
 
