@@ -76,7 +76,7 @@ int SDL__CreateWindow(const char* title, int width, int height) {
     }
 
     // Create a renderer
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!renderer) {
         printf("Error on Definition of Render Engine: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);

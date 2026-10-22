@@ -107,10 +107,10 @@ Textures: `A_Texture` = `BacheGherti.png` (small player), `B_Texture` = `Hestler
 | Lose | `size < 3`, or touching the enemy while `size < 600` |
 | Enemy | fixed 50x50, starts at (100, 100), moves 1 px per frame, picks a new random direction (up/down/right/left) every 70 frames |
 | Health item | 50 px at spawn, shrinks 10 px/s (lives about 5 s), respawns somewhere random when it expires or is eaten |
-| Health growth | `size += sizeHealth * 3 / ln(fairness_health)` |
+| Health growth | `size += HEALTH_GROWTH` (flat `40.0` px per item, fixed B2; was log-distance based) |
 | Fire item | appears after every 3 health items eaten (counted only while no fire is visible), 50 px, shrinks 10 px/s |
-| Fire penalty | `size -= sizeFire * 2 / ln(fairness_fire)` |
-| `fairness_*` | integer distance between player and item, measured **at spawn time** (stale by the time you pick it up) |
+| Fire penalty | `size -= FIRE_PENALTY` (flat `40.0` px per item, fixed B2; was log-distance based) |
+| `fairness_*` | still computed at spawn (`sqrt` distance) but no longer read anywhere — dead code left over from the pre-B2 formula, not yet removed |
 | Score | frame counter divided by 60, shown red at (0,0), font size 30. Only drawn while playing. |
 | Controls | Arrow keys move, Space restarts on Game Over or Win, closing the window quits. `P` is read but unused. No Escape handling. |
 
@@ -122,15 +122,15 @@ Textures: `A_Texture` = `BacheGherti.png` (small player), `B_Texture` = `Hestler
 4. Draw player at the old position (only if playing).
 5. Choose sprite for **next** frame by size (one frame of lag).
 6. Shrink the player.
-7. Draw enemy, then update enemy direction every 70 frames and move 1 px. This is not guarded by `gameover/winner`.
-8. If `sizeHealth <= 0`: pick a random spot by rejection sampling, set `sizeHealth = 50`, compute `fairness_health`. Draw health item. Shrink it.
-9. If `sizeFire <= 0 || !fire_visable`: pick a random spot, set `sizeFire = 50`, compute `fairness_fire`. **This runs every frame while the fire is hidden.** Draw fire if visible, shrink it, hide it when it reaches 0.
-10. Movement. Each pressed arrow redraws the player at the old position, then moves by 3 px, with a boundary test done before the move.
+7. Draw enemy, then update enemy direction every 70 frames and move 1 px. This is not guarded by `state` (enemy still moves during Game Over/Victory).
+8. If `sizeHealth <= 0`: pick a random spot using `Overlaps()` against the player, enemy, and fire (fixed B6; was corner-in-rect checks with a wrong enemy size), set `sizeHealth = 50`, compute `fairness_health` (dead, see section 6). Draw health item. Shrink it.
+9. If `sizeFire <= 0 || !fire_visable`: pick a random spot using `Overlaps()` against the enemy, player, and health (fixed B6; the old health check was backwards and effectively always false), set `sizeFire = 50`, compute `fairness_fire` (dead, see section 6). **This still runs every frame while the fire is hidden** (not changed by B6). Draw fire if visible, shrink it, hide it when it reaches 0.
+10. Movement. Each pressed arrow redraws the player at the old position, then moves by 3 px; position is now clamped to `[0, window_size - size]` afterward (fixed B8; was a pre-move guard that could still overshoot by up to 2 px).
 11. Build corner coordinates for player, health, fire, enemy.
-12. Health collision: grow, mark item eaten, increment `health_counter`, maybe show fire. Fire collision: shrink, hide fire. Enemy collision: `gameover = true`.
+12. Health collision: grow by `HEALTH_GROWTH`, clamp position (B8), mark item eaten, increment `health_counter`, maybe show fire. Fire collision: shrink by `FIRE_PENALTY`, hide fire. Enemy collision: `state = GameState::GameOver`.
 13. Draw score text (builds a `std::string`, opens the font file again).
-14. `size < 3` sets `gameover`. If `gameover`, draw the Game Over image. If also Space: destroy all textures, reload them, reset a subset of variables.
-15. `size >= 600` sets `winner`. Same pattern for the Win image and restart. The restart block is a copy paste of the Game Over one.
+14. `size < 3` sets `state = GameState::GameOver`. If GameOver, draw the Game Over image. If also Space: call the shared `ResetGame()` (fixed B3; was a partial inline reset).
+15. `size >= 600` sets `state = GameState::Victory`. Same pattern for the Win image and restart, also calling `ResetGame()` (fixed B3; the restart block is no longer a separate copy-paste of the Game Over one).
 16. `SDL_RenderPresent`, then `SDL_Delay(fps - deltatime)` if `deltatime < fps`.
 
 Rendering, input, logic and collision are interleaved. The player is drawn first, so items and enemy are drawn over it.
@@ -147,11 +147,29 @@ restart blocks in `game.cpp`. `C_Texture` is an alias of `A_Texture`/
 `B_Texture`, never an owner, so destroying A and B is sufficient.
 
 
-**B2. Division by zero and absurd growth from `log(distance)`** (review #4, confirmed, with more detail)
-`fairness_*` is an `int` distance. `ln(1) = 0` gives `x / 0.0 = inf`, so picking up an item at distance exactly 1 sets `size` to `+inf` (instant win) or `-inf` (instant loss). Distance 0 gives `ln(0) = -inf`, a zero change. Distances 2 to 3 give a huge multiplier (`1/ln(2)` is about 1.44, so `50*3/0.69` is about 217 px). Also the distance is stale (measured at spawn, not at pickup) and bigger distance gives a smaller reward, which is probably not what the owner meant. Needs a design decision (section 11) and a bounded formula, for example a fixed growth per health item.
+**B2. Division by zero and absurd growth from `log(distance)` — FIXED**
+Replaced both `size += sizeHealth * 3 / log(fairness_health)` and
+`size -= sizeFire * 2 / log(fairness_fire)` with flat constants,
+`size += HEALTH_GROWTH` / `size -= FIRE_PENALTY` (`HEALTH_GROWTH =
+FIRE_PENALTY = 40.0`, confirmed with the owner). No more `log()` in
+either path, so no distance-zero/distance-one div-by-zero or inf/-inf,
+and no more "closer gives a wildly bigger reward" effect. This also
+answers open question 1 in section 11. `fairness_health`/`fairness_fire`
+are still computed at spawn but now dead code (not removed yet, see
+section 11 cleanup note).
 
-**B3. Restart does not reset the whole state** (review #5, confirmed with a concrete case)
-Not reset: `health_counter`, `fire_visable`, `counter_enemy_direction`, `enemy_direction`, `Random_*` positions, `winner`/`gameover` of the other kind. Concrete failure: if the fire was visible when you died, `fire_visable` stays `true`, and the restart sets `sizeFire = -1`, so the first frame respawns it and a fire is on screen right at the start. Fix: one `ResetGame()` that sets every game variable from a single list of initial values, used by both endings.
+**B3. Restart does not reset the whole state — FIXED**
+Added a single `ResetGame()` (takes every texture and game-state
+variable by reference) called from both the Game Over and Win restart
+sites, replacing the two near-identical ~25 line inline blocks. It now
+resets everything the old blocks missed: `health_counter`,
+`fire_visable`, `counter_enemy_direction`, `enemy_direction`, and
+`state` (both endings at once, see B10). Fixes the concrete case: dying
+while a fire was visible no longer leaves a fire on screen at the start
+of the next round. `Random_Health_i/j`/`Random_Fire_i/j` are not
+explicitly reset inside `ResetGame()` — setting `sizeHealth`/`sizeFire`
+to `-1` makes the existing per-frame spawn logic (B6) pick fresh,
+validated positions on the next frame, same as before.
 
 **B4. Unchecked failures that can crash — FIXED**
 `SDL__CreateWindow`'s return value is now checked in `main` (note: it
@@ -175,42 +193,64 @@ done here.
 `IMG_Quit`/`TTF_Quit` to the existing window and renderer failure
 cleanup paths, which previously only called `SDL_Quit`.
 
-**B6. Spawn checks do not check overlap** (review #3, confirmed, with extra defects)
-- Only the item's top left point is tested against the other rectangle, not full rectangle overlap.
-- The enemy rectangle in both loops uses `Enemy_i + size` (the **player's** size) instead of 50.
-- In the fire loop, the health test is reversed: it checks whether the **health item's** corner is inside the **fire** rectangle, using `sizeFire`, which is 0 or -1 at that time, so the test is effectively always false.
-- Because the fire loop runs every frame while the fire is hidden (step 9 above), it wastes work and re-rolls `fairness_fire` constantly.
-Fix: one reusable `bool Overlaps(const SDL_Rect&, const SDL_Rect&)`, used everywhere including collisions, and spawn the fire only when it is actually due.
+**B6. Spawn checks do not check overlap — FIXED**
+Added a reusable `bool Overlaps(const SDL_Rect&, const SDL_Rect&)` and
+rewrote both spawn loops to build a real candidate rect and test full
+overlap with it, instead of testing only the new item's top-left
+corner. Also fixed along the way: the enemy rect in both loops now
+uses its actual 50x50 size instead of `Enemy_i + size` (the player's
+size); the fire loop's health check now tests the health item's real
+current rect (only when `sizeHealth > 0`) instead of the old backwards,
+always-`sizeFire`-sized (0 or -1) check that was effectively always
+false. Not changed: the fire loop still re-rolls every frame while the
+fire is hidden (that's a separate, not-yet-addressed inefficiency, not
+part of B6's overlap-correctness scope).
 
 **B7. Gameplay speed depends on frame rate** (review #6, narrowed)
 Shrink, item lifetimes and the Space/score logic partly use `deltatime`, but player speed (3 px/frame), enemy speed (1 px/frame), the 70 frame direction timer and the score (`frames / 60`) are all per frame. On a 144 Hz display the frame time is 6 ms (about 166 fps), so the player moves about 2.7 times faster than on 60 Hz. The frame limiter is also wrong: `fps - deltatime` subtracts the **previous** frame's total time (which already included the previous delay), not the current frame's work time, so the pacing oscillates. Fix: use `deltatime` for all movement, and use vsync (`SDL_RENDERER_PRESENTVSYNC`) or a correct limiter.
 
-**B8. Player can leave the window** (review #7, confirmed)
-Boundary tests run before a 3 px step, so the player can end up to 2 px outside on any edge (up/left allow `>= 0` then subtract 3, so `y` can become -3). Growth is never clamped either, so eating a health item at an edge puts part of the bigger square outside the window. Fix: clamp the position after movement and after any size change.
+**B8. Player can leave the window — FIXED**
+Removed the pre-move guards (`Character_j >= 0`, `Character_i <
+window_size - size`, etc.) and instead clamp `Character_i`/`Character_j`
+to `[0, window_size - size]` after all movement is applied, every
+`Playing` frame. Also added a clamp right after `size += HEALTH_GROWTH`
+in the health-collision block, since growth near an edge could
+otherwise leave the player partly outside the window until the next
+frame's movement clamp ran. Shrinking (fire penalty) needs no clamp —
+it only loosens the valid range.
 
-**B9. Enemy behavior problems** (review improvement B, confirmed)
-It stops completely when it hits a wall (the movement guard fails) and stays stuck until the next 70 frame direction roll. It keeps moving during Game Over and Win. Its direction and counter are not reset on restart. Its speed is frame based (B7).
+**B9. Enemy behavior problems** (review improvement B, confirmed, not yet fixed)
+It stops completely when it hits a wall (the movement guard fails) and stays stuck until the next 70 frame direction roll. It keeps moving during Game Over and Win (still true after B10 — the enemy-movement block still isn't guarded by `state`, see section 7 step 7). Its direction and counter are reset on restart now (`ResetGame()`, B3), but the stuck-on-wall and keeps-moving-during-an-ending problems remain. Its speed is frame based (B7). Planned for Step 3.
 
-**B10. Game state is two independent booleans** (review improvement C)
-`gameover` and `winner` can in principle both be true (nothing prevents the collision/eating blocks from running during an ending, because they are not guarded). Use `enum class GameState { Playing, Paused, GameOver, Victory }`.
+**B10. Game state is two independent booleans — FIXED**
+Added `enum class GameState { Playing, GameOver, Victory }` and
+replaced every `gameover`/`winner` bool (local declarations, all
+`!gameover && !winner` guards, both assignment sites, both `if
+(gameover)`/`if (winner)` reads, both restart conditions, and
+`ResetGame()`'s signature) with a single `state` variable. The
+contradictory-state case is now structurally impossible rather than
+just unobserved. Note: implemented without a `Paused` value — pause
+input (`P` key) still exists in `SDL.h` but `game.cpp` still never
+reads it, so there's no pause feature yet for a `Paused` state to
+represent (see section 3, section 11 open question 3).
 
 **B11. Rendering and logic are interleaved, with redundant draws** (review #12, extended)
 The player is drawn before it is moved or resized. Each pressed arrow draws the player again at the old position (up to 5 draws per frame), which doubles alpha edges and is pointless. Sprite choice lags one frame. Do input, update, collide, render, present as separate stages.
 
 ### Low or latent
 
-**B12. Spawn loop can in theory never end** (review #11)
-Today it cannot practically happen, because only the top left point is tested. After B6 is fixed with real overlap tests and a large player (up to 599 px in a 700 px window), valid spots get rare. Add an attempt limit and a fallback.
+**B12. Spawn loop can in theory never end** (review #11, more reachable now that B6 is fixed)
+Previously could not practically happen, because only the top-left point was tested. Now that B6 uses real overlap tests, a large player (up to 599 px in a 700 px window) leaves less and less free space, so this becomes more reachable than before, though still not hit in practice at current sizes. Add an attempt limit and a fallback. Not yet done.
 
 **B13. Score is not time based**, and it opens the font file every frame (see helper issues). `score_counter / 60` assumes exactly 60 fps. There is also an unused shadowed `const char* score = 0;` near the top of `main`.
 
 **B14. Narrowing conversions.** `SDL_Rect rect = { Character_i, Character_j, size, size };` initializes `int` fields from `double` values. Expect compiler warnings, and a hard error under stricter settings.
 
-**B15. Uninitialized variables.** `Random_Health_i/j` and `fairness_health/fire` start uninitialized. They are written before first use in practice (health spawns in frame 1), but this is fragile.
+**B15. Uninitialized variables.** `Random_Health_i/j` and `fairness_health/fire` start uninitialized. They are written before first use in practice (health spawns in frame 1), but this is fragile. `fairness_health/fire` are additionally dead code since B2 — still worth initializing properly if kept, or removing (see section 11).
 
 ### Corrections to the earlier review
 
-- **Review #8 ("player is immune to the enemy when large") is not a real bug.** Immunity only starts at `size >= 600`, and that is exactly when `winner` becomes true in the same frame. There is nothing to protect against. The real issue is the missing state machine (B10).
+- **Review #8 ("player is immune to the enemy when large") is not a real bug.** Immunity only starts at `size >= 600`, and that is exactly when `state` becomes `GameState::Victory` in the same frame (was: `winner` becomes `true`, before B10). There is nothing to protect against. The state machine itself (B10) is now fixed.
 - **Review #2** is accurate but overstated as "high" (see B5).
 - **Review #6** is partially true only (see B7: some things are already time based).
 - **Review #10 (image leak)** is real, but `SDL__DrawImage` is never called by the game, so it does not affect gameplay.
@@ -245,9 +285,9 @@ Since only four helper functions are actually used, the simplest cleanup is to d
 ## 11. Open questions for the owner
 
 Ask before changing these, they are design decisions, not bugs:
-1. What was `fairness` (distance based growth) meant to do? Should closer items give more, less, or the same?
+1. ~~What was `fairness` (distance based growth) meant to do?~~ **Answered (B2):** dropped distance from the formula entirely, flat `40.0` px growth/shrink per pickup, confirmed with the owner. Follow-up, still open: delete the now-dead `fairness_health`/`fairness_fire` variables and their spawn-time `sqrt()` computation, or leave them in place for a possible future distance-based feature?
 2. Should the enemy be able to kill a big player? (Currently irrelevant because 600 means win.)
-3. What were the unused images (`speedBooster`, `Pause`, `*_Fast`, `Bozorg`, `Bache`) for? Finish them, or delete them?
+3. What were the unused images (`speedBooster`, `Pause`, `*_Fast`, `Bozorg`, `Bache`) for? Finish them, or delete them? (Relatedly: is a pause feature wanted? `GameState` has no `Paused` value yet, see B10.)
 4. Keep Visual Studio only, or also support CMake?
 5. Which license for the code, and which font to ship?
 
