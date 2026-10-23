@@ -127,10 +127,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Collision.cpp" />
+    <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Fire.cpp" />
     <ClCompile Include="game.cpp" />
+    <ClCompile Include="GameLogic.cpp" />
+    <ClCompile Include="Health.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SDLHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Collision.hpp" />
+    <ClInclude Include="Enemy.hpp" />
+    <ClInclude Include="Fire.hpp" />
+    <ClInclude Include="GameLogic.hpp" />
+    <ClInclude Include="Health.hpp" />
+    <ClInclude Include="Player.hpp" />
+    <ClInclude Include="Renderer.hpp" />
     <ClInclude Include="SDL.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
