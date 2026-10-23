@@ -20,7 +20,7 @@ void Game_LoadTextures(GameContext& ctx, GameWorld& world) {
     world.enemy.texture  = LoadTextureChecked(ctx.renderer, "Enemy.png");
     world.background_tex = LoadTextureChecked(ctx.renderer, "background.png");
     world.gameover_tex   = LoadTextureChecked(ctx.renderer, "GameOver.png");
-    world.win_tex         = LoadTextureChecked(ctx.renderer, "win.png");
+    world.win_tex         = LoadTextureChecked(ctx.renderer, "Win.png");
 }
 
 static void Game_DestroyTextures(GameWorld& world) {

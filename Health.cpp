@@ -4,7 +4,6 @@
 #include "Fire.hpp"
 #include "Collision.hpp"
 #include <cstdlib>
-#include <cmath>
 
 void Health_SpawnIfNeeded(HealthState& health, const PlayerState& player, const EnemyState& enemy, const FireState& fire, int window_size) {
     if (health.size > 0) return;
@@ -19,8 +18,6 @@ void Health_SpawnIfNeeded(HealthState& health, const PlayerState& player, const 
         (fire.visible && Overlaps(candidate, SDL_Rect{ fire.x, fire.y, (int)fire.size, (int)fire.size })));
 
     health.size = 50;
-    health.fairness = (int)sqrt(((health.x - player.x) * (health.x - player.x)) +
-        ((health.y - player.y) * (health.y - player.y)));
 }
 
 void Health_Shrink(HealthState& health, Uint32 deltatime) {

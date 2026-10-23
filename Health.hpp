@@ -9,7 +9,6 @@ struct HealthState {
     int x = 0;
     int y = 0;
     double size = -1;
-    int fairness = 0; // dead code since B2 (flat growth replaced the distance formula); kept pending the owner's open question
     SDL_Texture* texture = nullptr;
 };
 

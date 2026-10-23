@@ -171,7 +171,9 @@ void SDL__FillCircle(GameContext& ctx, int cx, int cy, int radius, const char* c
 void SDL__DrawText(GameContext& ctx, const char* text, int x, int y, int size, const char* color) {
 
     // Load a font
-    TTF_Font* font = TTF_OpenFont("consola.ttf", size);
+    // consola.ttf (Microsoft Consolas) replaced with an openly licensed
+    // font - see CLAUDE.md section 10.
+    TTF_Font* font = TTF_OpenFont("DejaVuSansMono.ttf", size);
     if (!font) {
         printf("Error on Loading Font: %s\n", TTF_GetError());
         return;

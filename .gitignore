@@ -1,23 +1,21 @@
-# Visual Studio build output
+# Visual Studio
+.vs/
+*.vcxproj.user
+*.sdf
+*.opensdf
+*.suo
+
+# Build output (Visual Studio)
 Debug/
 Release/
 x64/
 x86/
-.vs/
+Win32/
 
-# Build artifacts (if they ever end up outside x64/x86)
-*.obj
-*.ilk
-*.pdb
-*.log
-*.tlog/
-*.idb
-*.exp
-*.lib.recipe
+# Build output (CMake)
+build/
+out/
 
-# Visual Studio user-specific files
-*.vcxproj.user
-*.suo
-*.user
-*.sdf
-*.opensdf
+# OS cruft
+.DS_Store
+Thumbs.db

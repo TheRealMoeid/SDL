@@ -10,7 +10,6 @@ struct FireState {
     int y = 0;
     double size = -1;
     bool visible = false;
-    int fairness = 0; // dead code since B2; kept pending the owner's open question
     SDL_Texture* texture = nullptr;
 };
 

@@ -11,9 +11,9 @@
 #include <math.h>
 #include <time.h>
 #include <stdbool.h>
-#include "sdl/SDL.h"
-#include "sdl/SDL_ttf.h"
-#include "sdl/SDL_image.h"
+#include <SDL.h>
+#include <SDL_ttf.h>
+#include <SDL_image.h>
 
 struct Events
 {
