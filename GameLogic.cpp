@@ -121,7 +121,7 @@ void Game_RunFrame(GameContext& ctx, GameWorld& world, const Events& event, Uint
     if (world.player.size < 3) {
         world.state = GameState::GameOver;
     }
-    if (world.player.size >= (world.window_size - 100)) {
+    if (world.player.size >= (world.window_size - 200)) {
         world.state = GameState::Victory;
     }
 

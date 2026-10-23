@@ -8,8 +8,8 @@ items and the wandering enemy, and reach full size to win.
 
 - **Move**: Arrow keys
 - **Restart**: Space, after winning or losing
-- Grow to **600px** to win. Shrink below **3px**, or touch the enemy
-  while under 600px, to lose.
+- Grow to **500px** to win. Shrink below **3px**, or touch the enemy
+  while under 500px, to lose.
 - Health items make you grow; fire items (which appear after every 3
   health items eaten) make you shrink.
 
