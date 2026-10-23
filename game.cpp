@@ -162,302 +162,248 @@ int main() {
 
 	
 
-	while (true) {
+    while (true) {
+
+        //==================== 1. PROCESS EVENTS ================================
+        event = SDL__Events(ctx);
+        if (event.exit) {
+            break;
+        }
+
+        Uint32 deltatime = SDL_GetTicks() - pasttime;
+        pasttime = SDL_GetTicks();
 
 
-		//---- get events and check for exit condition -------------
-		event = SDL__Events(ctx);
-		if (event.exit) {
-			break;
-		}
+        //==================== 2. UPDATE GAME STATE ==============================
+
+        //-------------------- Player shrink -------------------------------
+        if (state == GameState::Playing) {
+            size -= 8.3 * log(size) * 0.3 * deltatime / 1000.0;
+        }
+
+        // B11: pick this frame's sprite before drawing it, not after -
+        // the old order drew with last frame's sprite, one frame of lag.
+        C_Texture = (size > 100) ? B_Texture : A_Texture;
+
+        //-------------------- Enemy movement -------------------------------
+        // B9: wrapped in state == Playing, so the enemy stops wandering
+        // during Game Over / Victory instead of continuing to move behind
+        // the overlay.
+        if (state == GameState::Playing) {
+            counter_enemy_direction += deltatime / 1000.0;
+            if (counter_enemy_direction >= ENEMY_DIRECTION_INTERVAL) {
+                enemy_direction = (rand() % (4)) + 1;
+                counter_enemy_direction = 0.0;
+            }
+
+            double enemy_step = ENEMY_SPEED * deltatime / 1000.0;
+            bool moved = false;
+
+            if (enemy_direction == 1 && (0 < Enemy_j - enemy_step) && (Enemy_j < (window_size - 50))) {
+                Enemy_j -= enemy_step;
+                moved = true;
+            }
+            if (enemy_direction == 2 && (0 < Enemy_j) && (Enemy_j + enemy_step < (window_size - 50))) {
+                Enemy_j += enemy_step;
+                moved = true;
+            }
+            if (enemy_direction == 3 && (0 < Enemy_i) && (Enemy_i + enemy_step < (window_size - 50))) {
+                Enemy_i += enemy_step;
+                moved = true;
+            }
+            if (enemy_direction == 4 && (0 < Enemy_i - enemy_step) && (Enemy_i < (window_size - 50))) {
+                Enemy_i -= enemy_step;
+                moved = true;
+            }
+
+            // B9: previously a blocked enemy just sat still until the next
+            // scheduled direction roll, up to ENEMY_DIRECTION_INTERVAL
+            // seconds away. Now it re-rolls immediately instead of waiting.
+            if (!moved) {
+                enemy_direction = (rand() % (4)) + 1;
+                counter_enemy_direction = 0.0;
+            }
+        }
+
+        //-------------------- Health item spawn/shrink ----------------------
+        if (sizeHealth <= 0) {
+            SDL_Rect candidate;
+            do {
+                Random_Health_i = rand() % (window_size - 50);
+                Random_Health_j = rand() % (window_size - 50);
+                candidate = { Random_Health_i, Random_Health_j, 50, 50 };
+            } while (Overlaps(candidate, SDL_Rect{ (int)Character_i, (int)Character_j, (int)size, (int)size }) ||
+                Overlaps(candidate, SDL_Rect{ (int)Enemy_i, (int)Enemy_j, 50, 50 }) ||
+                (fire_visable && Overlaps(candidate, SDL_Rect{ Random_Fire_i, Random_Fire_j, (int)sizeFire, (int)sizeFire })));
+
+            sizeHealth = 50;
+            fairness_health = sqrt(((Random_Health_i - Character_i) * (Random_Health_i - Character_i)) +
+                ((Random_Health_j - Character_j) * (Random_Health_j - Character_j)));
+        }
+        if (state == GameState::Playing) {
+            sizeHealth -= 10 * deltatime / 1000.0;
+        }
+
+        //-------------------- Fire item spawn/shrink -------------------------
+        if (sizeFire <= 0 || !fire_visable) {
+            SDL_Rect candidate;
+            do {
+                Random_Fire_i = rand() % (window_size - 50);
+                Random_Fire_j = rand() % (window_size - 50);
+                candidate = { Random_Fire_i, Random_Fire_j, 50, 50 };
+            } while (Overlaps(candidate, SDL_Rect{ (int)Enemy_i, (int)Enemy_j, 50, 50 }) ||
+                Overlaps(candidate, SDL_Rect{ (int)Character_i, (int)Character_j, (int)size, (int)size }) ||
+                (sizeHealth > 0 && Overlaps(candidate, SDL_Rect{ Random_Health_i, Random_Health_j, (int)sizeHealth, (int)sizeHealth })));
+
+            sizeFire = 50;
+            fairness_fire = sqrt(((Random_Fire_i - Character_i) * (Random_Fire_i - Character_i)) +
+                ((Random_Fire_j - Character_j) * (Random_Fire_j - Character_j)));
+        }
+        if (fire_visable) {
+            sizeFire -= 10 * deltatime / 1000.0;
+            if (sizeFire <= 0) {
+                fire_visable = false;
+                sizeFire = -1;
+            }
+        }
+
+        //-------------------- Player movement --------------------------------
+        // B11: pure state update now - no per-key draw here. The player is
+        // drawn exactly once, in the render stage below.
+        if (state == GameState::Playing) {
+            if (event.up)    Character_j -= PLAYER_SPEED * deltatime / 1000.0;
+            if (event.right) Character_i += PLAYER_SPEED * deltatime / 1000.0;
+            if (event.down)  Character_j += PLAYER_SPEED * deltatime / 1000.0;
+            if (event.left)  Character_i -= PLAYER_SPEED * deltatime / 1000.0;
+
+            double max_i = window_size - size;
+            double max_j = window_size - size;
+            if (Character_i < 0) Character_i = 0;
+            if (Character_i > max_i) Character_i = max_i;
+            if (Character_j < 0) Character_j = 0;
+            if (Character_j > max_j) Character_j = max_j;
+        }
 
 
-		//---- clear screen ----------------------------------------
-		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, Background_Texture, NULL, NULL);
+        //==================== 3. DETECT COLLISIONS ===============================
+        int Cx = (int)Character_i;
+        int Cy = (int)Character_j;
+        int Cx2 = (int)Character_i + (int)size;
+        int Cy2 = (int)Character_j + (int)size;
+        int Hx = Random_Health_i;
+        int Hy = Random_Health_j;
+        int Hx2 = Random_Health_i + sizeHealth;
+        int Hy2 = Random_Health_j + sizeHealth;
+        int Fx = Random_Fire_i;
+        int Fy = Random_Fire_j;
+        int Fx2 = Random_Fire_i + sizeFire;
+        int Fy2 = Random_Fire_j + sizeFire;
+        int Ex = (int)Enemy_i;
+        int Ey = (int)Enemy_j;
+        int Ex2 = (int)Enemy_i + 50;
+        int Ey2 = (int)Enemy_j + 50;
+
+        bool collided = true;
+        if (Cx2 <= Hx || Hx2 <= Cx) collided = false;
+        if (Cy2 <= Hy || Hy2 <= Cy) collided = false;
+
+        if (collided && (size < (window_size - 100))) {
+            size += HEALTH_GROWTH;
+            sizeHealth = -1;
+
+            if (Character_i > window_size - size) Character_i = window_size - size;
+            if (Character_j > window_size - size) Character_j = window_size - size;
+
+            if (!fire_visable) {
+                health_counter++;
+                if (health_counter >= 3) {
+                    fire_visable = true;
+                    sizeFire = 50;
+                    health_counter = 0;
+                }
+            }
+        }
+
+        bool collided_fire = true;
+        if (Cx2 <= Fx || Fx2 <= Cx) collided_fire = false;
+        if (Cy2 <= Fy || Fy2 <= Cy) collided_fire = false;
+
+        if (collided_fire && fire_visable && (size < (window_size - 100))) {
+            size -= FIRE_PENALTY;
+            sizeFire = -1;
+            fire_visable = false;
+        }
+
+        bool collided_enemy = true;
+        if (Cx2 <= Ex || Ex2 <= Cx) collided_enemy = false;
+        if (Cy2 <= Ey || Ey2 <= Cy) collided_enemy = false;
+
+        if (collided_enemy && (size < (window_size - 100))) {
+            state = GameState::GameOver;
+        }
+
+        if (state == GameState::Playing) {
+            score_time += deltatime / 1000.0;
+        }
+        if (size < 3) {
+            state = GameState::GameOver;
+        }
+        if (size >= (window_size - 100)) {
+            state = GameState::Victory;
+        }
+
+        // Restart: still a state update, so it runs before render - the new
+        // round's very first frame renders correctly rather than one frame
+        // behind the reset.
+        if ((state == GameState::GameOver || state == GameState::Victory) && event.space) {
+            ResetGame(renderer,
+                A_Texture, B_Texture, C_Texture,
+                Health_Texture, Fire_Texture, Enemy_Texture,
+                Background_Texture, GameOver_Texture, Win_Texture,
+                window_size,
+                size, sizeHealth, sizeFire,
+                Character_i, Character_j,
+                Enemy_i, Enemy_j,
+                health_counter, score_time,
+                counter_enemy_direction, enemy_direction,
+                state, fire_visable);
+        }
 
 
-		//-------------------- delta time --------------------------
-		Uint32 deltatime = SDL_GetTicks() - pasttime;
-		pasttime = SDL_GetTicks();
+        //==================== 4. RENDER ===========================================
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, Background_Texture, NULL, NULL);
+
+        if (state == GameState::Playing) {
+            SDL_Rect playerRect = { (int)Character_i, (int)Character_j, (int)size, (int)size };
+            SDL_RenderCopy(renderer, C_Texture, NULL, &playerRect);
+
+            SDL_Rect enemyRect = { (int)Enemy_i, (int)Enemy_j, 50, 50 };
+            SDL_RenderCopy(renderer, Enemy_Texture, NULL, &enemyRect);
+
+            SDL_Rect healthRect = { Random_Health_i, Random_Health_j, (int)sizeHealth, (int)sizeHealth };
+            SDL_RenderCopy(renderer, Health_Texture, NULL, &healthRect);
+
+            if (fire_visable) {
+                SDL_Rect fireRect = { Random_Fire_i, Random_Fire_j, (int)sizeFire, (int)sizeFire };
+                SDL_RenderCopy(renderer, Fire_Texture, NULL, &fireRect);
+            }
+
+            string string_score = "score : " + to_string((int)score_time);
+            SDL__DrawText(ctx, string_score.c_str(), 0, 0, 30, "#FF0000");
+        }
+
+        if (state == GameState::GameOver) {
+            SDL_RenderCopy(renderer, GameOver_Texture, NULL, NULL);
+        }
+        if (state == GameState::Victory) {
+            SDL_RenderCopy(renderer, Win_Texture, NULL, NULL);
+        }
 
 
-		//------------------ DrawCharacter ------------------------
-		if (state == GameState::Playing) {
-			SDL_Rect rect = { (int)Character_i, (int)Character_j, (int)size, (int)size };
-			SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
-		}
-		if (size > 100) {
-			C_Texture = B_Texture;
-		}
-		else {
-			C_Texture = A_Texture;
-		}
-		//----------------------- ResizeCharacter --------------------------
-		if (state == GameState::Playing) {
-
-			size -= 8.3 * log(size) * 0.3 * deltatime / 1000.0;
-
-		}
-
-
-		//---------------------- Draw Enemy --------------------------------++++++++++++++++++++++++++++++++++++
-		if (state == GameState::Playing) {
-			SDL_Rect rect = { (int)Enemy_i, (int)Enemy_j, 50, 50 };
-			SDL_RenderCopy(renderer, Enemy_Texture, NULL, &rect);
-		}
-		//---------------- Random movement for enemy -----------------------++++++++++++++++++++++++++++++++++++
-		counter_enemy_direction += deltatime / 1000.0;
-		if (counter_enemy_direction >= ENEMY_DIRECTION_INTERVAL) {
-			enemy_direction = (rand() % (4)) + 1;
-			counter_enemy_direction = 0.0;
-		}
-
-		double enemy_step = ENEMY_SPEED * deltatime / 1000.0;
-		if (enemy_direction == 1 && (0 < Enemy_j - enemy_step) && (Enemy_j < (window_size - 50))) {
-			Enemy_j -= enemy_step;
-		}
-		if (enemy_direction == 2 && (0 < Enemy_j) && (Enemy_j + enemy_step < (window_size - 50))) {
-			Enemy_j += enemy_step;
-		}
-		if (enemy_direction == 3 && (0 < Enemy_i) && (Enemy_i + enemy_step < (window_size - 50))) {
-			Enemy_i += enemy_step;
-		}
-		if (enemy_direction == 4 && (0 < Enemy_i - enemy_step) && (Enemy_i < (window_size - 50))) {
-			Enemy_i -= enemy_step;
-		}
-
-		//---- random number for health bar ------------------------
-		if (sizeHealth <= 0) {
-			SDL_Rect candidate;
-			do {
-				Random_Health_i = rand() % (window_size - 50);
-				Random_Health_j = rand() % (window_size - 50);
-				candidate = { Random_Health_i, Random_Health_j, 50, 50 };
-			} while (Overlaps(candidate, SDL_Rect{ (int)Character_i, (int)Character_j, (int)size, (int)size }) ||
-				Overlaps(candidate, SDL_Rect{ (int)Enemy_i, (int)Enemy_j, 50, 50 }) ||
-				(fire_visable && Overlaps(candidate, SDL_Rect{ Random_Fire_i, Random_Fire_j, (int)sizeFire, (int)sizeFire })));
-
-			sizeHealth = 50;
-			fairness_health = sqrt(((Random_Health_i - Character_i) * (Random_Health_i - Character_i)) +
-				((Random_Health_j - Character_j) * (Random_Health_j - Character_j)));
-		}
-
-
-		//-------------------- DrawHealthBar ----------------------
-		if (state == GameState::Playing) {
-			SDL_Rect rectHealthBar = { Random_Health_i, Random_Health_j, sizeHealth, sizeHealth };
-			SDL_RenderCopy(renderer, Health_Texture, NULL, &rectHealthBar);
-		}
-		//----------------------- ResizeHealthBar --------------------------
-		if (state == GameState::Playing) {
-
-			sizeHealth -= 10 * deltatime / 1000.0;
-
-		}
-
-
-		//---- random number for fire bar -------------------------
-		if (sizeFire <= 0 || !fire_visable) {
-			SDL_Rect candidate;
-			do {
-				Random_Fire_i = rand() % (window_size - 50);
-				Random_Fire_j = rand() % (window_size - 50);
-				candidate = { Random_Fire_i, Random_Fire_j, 50, 50 };
-			} while (Overlaps(candidate, SDL_Rect{ (int)Enemy_i, (int)Enemy_j, 50, 50 }) ||
-				Overlaps(candidate, SDL_Rect{ (int)Character_i, (int)Character_j, (int)size, (int)size }) ||
-				(sizeHealth > 0 && Overlaps(candidate, SDL_Rect{ Random_Health_i, Random_Health_j, (int)sizeHealth, (int)sizeHealth })));
-
-			sizeFire = 50;
-			fairness_fire = sqrt(((Random_Fire_i - Character_i) * (Random_Fire_i - Character_i)) +
-				((Random_Fire_j - Character_j) * (Random_Fire_j - Character_j)));
-		}
-
-
-		//-------------------- DrawFireBar ----------------------
-		if (fire_visable && state == GameState::Playing) {
-			SDL_Rect rectFireBar = { Random_Fire_i,Random_Fire_j, sizeFire, sizeFire };
-			SDL_RenderCopy(renderer, Fire_Texture, NULL, &rectFireBar);
-		}
-
-		//----------------------- ResizeFireBar --------------------------
-		if (fire_visable) {
-			sizeFire -= 10 * deltatime / 1000.0;
-			if (sizeFire <= 0) {
-				fire_visable = false;
-				sizeFire = -1;
-			}
-
-		}
-
-
-		//---- movement ---------------------------------------------
-
-		if (state == GameState::Playing) { //allow only game is not over
-			if (event.up) {
-				SDL_Rect rect = { (int)Character_i, (int)Character_j, (int)size, (int)size };
-				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
-				Character_j -= PLAYER_SPEED * deltatime / 1000.0;
-			}
-			if (event.right) {
-				SDL_Rect rect = { (int)Character_i, (int)Character_j, (int)size, (int)size };
-				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
-				Character_i += PLAYER_SPEED * deltatime / 1000.0;
-			}
-			if (event.down) {
-				SDL_Rect rect = { (int)Character_i, (int)Character_j, (int)size, (int)size };
-				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
-				Character_j += PLAYER_SPEED * deltatime / 1000.0;
-			}
-			if (event.left) {
-				SDL_Rect rect = { (int)Character_i, (int)Character_j, (int)size, (int)size };
-				SDL_RenderCopy(renderer, C_Texture, NULL, &rect);
-				Character_i -= PLAYER_SPEED * deltatime / 1000.0;
-			}
-
-			// B8: clamp after moving instead of only gating the step
-			// beforehand — the old `Character_j >= 0` / `Character_i <
-			// window_size - size` guards still let a 3px step overshoot
-			// by up to 2px on any edge.
-			double max_i = window_size - size;
-			double max_j = window_size - size;
-			if (Character_i < 0) Character_i = 0;
-			if (Character_i > max_i) Character_i = max_i;
-			if (Character_j < 0) Character_j = 0;
-			if (Character_j > max_j) Character_j = max_j;
-		}
-
-		//------------ CornersOfCharacterAndHealthBarAndFireBarAndEnemy -------------
-		int Cx = (int)Character_i;
-		int Cy = (int)Character_j;
-		int Cx2 = (int)Character_i + (int)size;
-		int Cy2 = (int)Character_j + (int)size;
-		int Hx = Random_Health_i;
-		int Hy = Random_Health_j;
-		int Hx2 = Random_Health_i + sizeHealth;
-		int Hy2 = Random_Health_j + sizeHealth;
-		int Fx = Random_Fire_i;
-		int Fy = Random_Fire_j;
-		int Fx2 = Random_Fire_i + sizeFire;
-		int Fy2 = Random_Fire_j + sizeFire;
-		int Ex = (int)Enemy_i;
-		int Ey = (int)Enemy_j;
-		int Ex2 = (int)Enemy_i + 50;
-		int Ey2 = (int)Enemy_j + 50;
-
-
-		//------------------- EatingHealthBar ---------------------
-		bool collided = true;
-		if (Cx2 <= Hx || Hx2 <= Cx) collided = false;
-		if (Cy2 <= Hy || Hy2 <= Cy) collided = false;
-
-		if (collided && (size < (window_size - 100))) {
-			size += HEALTH_GROWTH;
-			sizeHealth = -1;
-
-			// B8: growing can push an edge-hugging player partly outside
-			// the window; clamp immediately rather than waiting for next
-			// frame's movement-clamp to catch it.
-			if (Character_i > window_size - size) Character_i = window_size - size;
-			if (Character_j > window_size - size) Character_j = window_size - size;
-
-			if (!fire_visable) {
-				health_counter++;
-
-				if (health_counter >= 3) {
-					fire_visable = true;
-					sizeFire = 50;
-					health_counter = 0;
-				}
-			}
-		}
-
-
-		//------------------- EatingFireBar ---------------------
-		bool collided_fire = true;
-		if (Cx2 <= Fx || Fx2 <= Cx) collided_fire = false;
-		if (Cy2 <= Fy || Fy2 <= Cy) collided_fire = false;
-
-		if (collided_fire && fire_visable && (size < (window_size - 100))) {
-
-			size -= FIRE_PENALTY;
-			sizeFire = -1;
-			fire_visable = false;
-
-		}
-
-		//------------------- EatingEnemy ---------------------++++++++++++++++++++++++++++++++++++++++
-		bool collided_enemy = true;
-		if (Cx2 <= Ex || Ex2 <= Cx) collided_enemy = false;
-		if (Cy2 <= Ey || Ey2 <= Cy) collided_enemy = false;
-
-		if (collided_enemy && (size < (window_size - 100))) {
-
-			state = GameState::GameOver;
-		}
-
-
-		//--------------------- Score -----------------------------
-		if (state == GameState::Playing) {
-			score_time += deltatime / 1000.0;
-			string string_score = "score : " + to_string((int)score_time);
-			const char* score = string_score.c_str();
-			SDL__DrawText(ctx, score, 0, 0, 30, "#FF0000");
-		}
-
-		//--------------------- GameOver --------------------------
-		if (size < 3) {
-			state = GameState::GameOver;
-		}
-		if (state == GameState::GameOver) {
-			SDL_RenderCopy(renderer, GameOver_Texture, NULL, NULL);
-
-		}
-
-		if (state == GameState::GameOver && event.space) {
-			ResetGame(renderer,
-				A_Texture, B_Texture, C_Texture,
-				Health_Texture, Fire_Texture, Enemy_Texture,
-				Background_Texture, GameOver_Texture, Win_Texture,
-				window_size,
-				size, sizeHealth, sizeFire,
-				Character_i, Character_j,
-				Enemy_i, Enemy_j,
-				health_counter, score_time,
-				counter_enemy_direction, enemy_direction,
-				state, fire_visable);
-		}
-		//------ WINNER WINNER CHICKEN DINNER ---------------------
-		if (size >= (window_size - 100))
-			state = GameState::Victory;
-
-		if (state == GameState::Victory) {
-			SDL_RenderCopy(renderer, Win_Texture, NULL, NULL);
-
-		}
-		if (state == GameState::Victory && event.space) {
-			ResetGame(renderer,
-				A_Texture, B_Texture, C_Texture,
-				Health_Texture, Fire_Texture, Enemy_Texture,
-				Background_Texture, GameOver_Texture, Win_Texture,
-				window_size,
-				size, sizeHealth, sizeFire,
-				Character_i, Character_j,
-				Enemy_i, Enemy_j,
-				health_counter, score_time,
-				counter_enemy_direction, enemy_direction,
-				state, fire_visable);
-		}
-
-
-		//-------------------- RenderScreen -----------------------
-		SDL_RenderPresent(renderer);
-
-
-		
-
-	}
-
+        //==================== 5. PRESENT ==========================================
+        SDL_RenderPresent(renderer);
+    }
 	SDL__Destroy(ctx);
 	return 0;
 }
