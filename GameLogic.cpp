@@ -2,6 +2,7 @@
 #include "GameConstants.hpp"
 #include "Collision.hpp"
 #include <cstdio>
+#include "GameConstants.hpp"
 
 static SDL_Texture* LoadTextureChecked(SDL_Renderer* ren, const char* path) {
     SDL_Texture* tex = IMG_LoadTexture(ren, path);
@@ -12,15 +13,15 @@ static SDL_Texture* LoadTextureChecked(SDL_Renderer* ren, const char* path) {
 }
 
 void Game_LoadTextures(GameContext& ctx, GameWorld& world) {
-    world.player.small_tex = LoadTextureChecked(ctx.renderer, "BacheGherti.png");
-    world.player.big_tex   = LoadTextureChecked(ctx.renderer, "Hestler.png");
+    world.player.small_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "BacheGherti.png");
+    world.player.big_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Hestler.png");
     world.player.current_tex = world.player.small_tex;
-    world.health.texture = LoadTextureChecked(ctx.renderer, "Health.png");
-    world.fire.texture   = LoadTextureChecked(ctx.renderer, "Fire.png");
-    world.enemy.texture  = LoadTextureChecked(ctx.renderer, "Enemy.png");
-    world.background_tex = LoadTextureChecked(ctx.renderer, "background.png");
-    world.gameover_tex   = LoadTextureChecked(ctx.renderer, "GameOver.png");
-    world.win_tex         = LoadTextureChecked(ctx.renderer, "Win.png");
+    world.health.texture = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Health.png");
+    world.fire.texture = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Fire.png");
+    world.enemy.texture = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Enemy.png");
+    world.background_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "background.png");
+    world.gameover_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "GameOver.png");
+    world.win_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Win.png");
 }
 
 static void Game_DestroyTextures(GameWorld& world) {
