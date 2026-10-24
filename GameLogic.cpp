@@ -90,7 +90,7 @@ void Game_RunFrame(GameContext& ctx, GameWorld& world, const Events& event, Uint
     }
 
     //==================== DETECT COLLISIONS ===============================
-    if (CollidedWithHealth(world.player, world.health) && (world.player.size < (world.window_size - 100))) {
+    if (CollidedWithHealth(world.player, world.health) && (world.player.size < (world.window_size - 200))) {
         world.player.size += HEALTH_GROWTH;
         world.health.size = -1;
         Player_ClampToWindow(world.player, world.window_size);
@@ -105,13 +105,13 @@ void Game_RunFrame(GameContext& ctx, GameWorld& world, const Events& event, Uint
         }
     }
 
-    if (CollidedWithFire(world.player, world.fire) && world.fire.visible && (world.player.size < (world.window_size - 100))) {
+    if (CollidedWithFire(world.player, world.fire) && world.fire.visible && (world.player.size < (world.window_size - 200))) {
         world.player.size -= FIRE_PENALTY;
         world.fire.size = -1;
         world.fire.visible = false;
     }
 
-    if (CollidedWithEnemy(world.player, world.enemy) && (world.player.size < (world.window_size - 100))) {
+    if (CollidedWithEnemy(world.player, world.enemy) && (world.player.size < (world.window_size - 200))) {
         world.state = GameState::GameOver;
     }
 
