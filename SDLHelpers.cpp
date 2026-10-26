@@ -1,5 +1,4 @@
 #include "SDLHelpers.hpp"   // keep this as the first include (_CRT_SECURE_NO_WARNINGS lives there)
-#include "GameConstants.hpp"
 
 int SDL__CreateWindow(GameContext& ctx, const char* title, int width, int height) {
 
@@ -174,7 +173,7 @@ void SDL__DrawText(GameContext& ctx, const char* text, int x, int y, int size, c
     // Load a font
     // consola.ttf (Microsoft Consolas) replaced with an openly licensed
     // font - see CLAUDE.md section 10.
-    TTF_Font* font = TTF_OpenFont(ASSET_FONTS_DIR "DejaVuSansMono.ttf", size);
+    TTF_Font* font = TTF_OpenFont("DejaVuSansMono.ttf", size);
     if (!font) {
         printf("Error on Loading Font: %s\n", TTF_GetError());
         return;

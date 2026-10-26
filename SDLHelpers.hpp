@@ -1,6 +1,9 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
 #define SDL_MAIN_HANDLED
+#pragma comment(lib,"SDL2.lib")
+#pragma comment(lib,"SDL2_ttf.lib")
+#pragma comment(lib,"SDL2_image.lib")
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -22,8 +22,3 @@ Thumbs.db
 
 *.patch 
 sdl.vcxproj.user
-
-
-vcpkg_installed/
-out/
-build/
