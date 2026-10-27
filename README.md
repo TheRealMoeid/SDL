@@ -34,8 +34,9 @@ cmake -B build
 cmake --build build
 ```
 
-The built executable expects the image assets and `DejaVuSansMono.ttf`
-next to it; the CMake build copies them there automatically.
+The built executable expects an `assets/` folder next to it, containing
+`assets/images/` (the PNGs) and `assets/fonts/DejaVuSansMono.ttf`; the
+CMake build copies this folder there automatically.
 
 ## License
 

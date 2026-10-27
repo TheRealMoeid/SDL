@@ -35,16 +35,8 @@ target_link_libraries(SquareBaby PRIVATE
 # Adjust ASSET_DIR once assets move into assets/ (repo polish, pending).
 set(ASSET_DIR ${CMAKE_SOURCE_DIR})
 add_custom_command(TARGET SquareBaby POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            ${ASSET_DIR}/BacheGherti.png
-            ${ASSET_DIR}/Hestler.png
-            ${ASSET_DIR}/Health.png
-            ${ASSET_DIR}/Fire.png
-            ${ASSET_DIR}/Enemy.png
-            ${ASSET_DIR}/background.png
-            ${ASSET_DIR}/GameOver.png
-            ${ASSET_DIR}/Win.png
-            ${ASSET_DIR}/DejaVuSansMono.ttf
-            $<TARGET_FILE_DIR:SquareBaby>
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/assets
+            $<TARGET_FILE_DIR:SquareBaby>/assets
     COMMENT "Copying game assets next to the built executable"
 )
