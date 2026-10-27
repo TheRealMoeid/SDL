@@ -21,7 +21,7 @@ int main() {
     world.player.y = (world.window_size - (int)world.player.size) / 2;
     world.player.current_tex = world.player.small_tex;
 
-    Uint64 pasttime = SDL_GetTicks();
+    Uint32 pasttime = SDL_GetTicks();
 
     while (true) {
 
