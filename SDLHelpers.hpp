@@ -1,9 +1,7 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
 #define SDL_MAIN_HANDLED
-#pragma comment(lib,"SDL2.lib")
-#pragma comment(lib,"SDL2_ttf.lib")
-#pragma comment(lib,"SDL2_image.lib")
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,9 +9,9 @@
 #include <math.h>
 #include <time.h>
 #include <stdbool.h>
-#include <SDL.h>
-#include <SDL_ttf.h>
-#include <SDL_image.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 
 struct Events
 {

@@ -17,10 +17,23 @@ items and the wandering enemy, and reach full size to win.
 
 ### Visual Studio (Windows)
 
-Open `sdl.sln`. The project targets `PlatformToolset v145`; retarget
-to your installed toolset if Visual Studio reports it as missing.
-Debug/Release and Win32/x64 configurations are all set up; the three
-SDL DLLs are copied alongside the executable from the project folder.
+Requires [vcpkg](https://github.com/microsoft/vcpkg) with SDL2,
+SDL2_image and SDL2_ttf installed, and `vcpkg integrate install` run
+once on your machine:
+
+```powershell
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+.\bootstrap-vcpkg.bat
+.\vcpkg integrate install
+.\vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-ttf:x64-windows
+```
+
+Then open `sdl.sln`. The project targets `PlatformToolset v145`;
+retarget to your installed toolset if Visual Studio reports it as
+missing. The Debug|x64 configuration is wired up for vcpkg; the
+needed SDL DLLs are copied next to the built executable automatically
+via a post-build step.
 
 ### CMake (Windows / Linux / macOS)
 
