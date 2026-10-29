@@ -9,3 +9,5 @@ constexpr double ENEMY_SPEED = 60.0;  // px/sec, matches old 1px/frame @60fps
 constexpr double ENEMY_DIRECTION_INTERVAL = 70.0 / 60.0; // seconds, matches old 70-frame timer @60fps
 #define ASSET_IMAGES_DIR "assets/images/"
 #define ASSET_FONTS_DIR  "assets/fonts/"
+constexpr double ENEMY_HEALTH_AVOID_MARGIN = 10.0; // px buffer enemy keeps from the health item
+constexpr int ITEM_SPAWN_SIZE = 50; // px, health/fire/enemy size at spawn
