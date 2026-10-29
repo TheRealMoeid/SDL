@@ -13,6 +13,30 @@ items and the wandering enemy, and reach full size to win.
 - Health items make you grow; fire items (which appear after every 3
   health items eaten) make you shrink.
 
+## Enemy behavior
+
+The enemy wanders the window on its own and does not chase the player.
+Each direction change, it checks all four directions and picks randomly
+among the ones that are actually open, instead of picking blind and
+discovering a wall or item in the way on the next frame. It keeps moving
+in the same direction as long as that direction stays open, and only
+re-evaluates when its direction timer runs out or the path ahead becomes
+blocked - so it reads as deliberate movement rather than jittering every
+frame.
+
+It treats the window edges, the fire item, and the health item as solid:
+
+- It will not walk through fire or health.
+- Around health specifically, it keeps a small buffer distance rather
+  than only avoiding direct contact. If that buffer is the only thing
+  blocking every direction (for example, a health item spawns right
+  next to a wall), it falls back to avoiding just the item's actual
+  footprint instead of freezing in place, so it can never get
+  permanently stuck waiting for a health item to disappear.
+
+Items also never spawn overlapping the enemy's current position, or
+overlapping each other.
+
 ## Building
 
 ### Visual Studio (Windows)
