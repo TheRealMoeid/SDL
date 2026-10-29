@@ -71,7 +71,7 @@ void Game_RunFrame(GameContext& ctx, GameWorld& world, const Events& event, Uint
     // B9: stays still outside Playing instead of wandering behind the
     // ending overlay; re-rolls immediately when blocked (see Enemy.cpp).
     if (world.state == GameState::Playing) {
-        Enemy_Update(world.enemy, deltatime, world.window_size);
+        Enemy_Update(world.enemy, world.health, world.fire, deltatime, world.window_size);
     }
 
     //-------------------- Health item spawn/shrink ----------------------

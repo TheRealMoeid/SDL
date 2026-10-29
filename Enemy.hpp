@@ -1,6 +1,9 @@
 #pragma once
 #include "SDLHelpers.hpp"
 
+struct HealthState;
+struct FireState;
+
 struct EnemyState {
     double x = 100;
     double y = 100;
@@ -9,4 +12,4 @@ struct EnemyState {
     SDL_Texture* texture = nullptr;
 };
 
-void Enemy_Update(EnemyState& enemy, Uint32 deltatime, int window_size);
+void Enemy_Update(EnemyState& enemy, const HealthState& health, const FireState& fire, Uint32 deltatime, int window_size);
