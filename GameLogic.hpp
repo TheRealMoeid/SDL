@@ -30,12 +30,9 @@ struct GameWorld {
 // Loads every texture; used both at startup and after a reset.
 void Game_LoadTextures(GameContext& ctx, GameWorld& world);
 
-// B3: single source of truth for "start a fresh round" - destroys and
-// reloads every texture, then resets every piece of round state,
-// including health_counter, fire.visible, enemy.direction and
-// enemy.direction_timer, which the original restart blocks missed.
+// B21: Game_Reset no longer touches textures - it only resets round
+// state now. Textures are loaded once by Game_LoadTextures, called
+// only from game.cpp at startup.
 void Game_Reset(GameContext& ctx, GameWorld& world);
 
-// Runs one frame's worth of state update and collision detection
-// (stages 2 and 3). Rendering (stage 4) is Renderer.hpp's job.
 void Game_RunFrame(GameContext& ctx, GameWorld& world, const Events& event, Uint32 deltatime);
