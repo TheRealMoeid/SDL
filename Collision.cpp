@@ -3,6 +3,7 @@
 #include "Health.hpp"
 #include "Fire.hpp"
 #include "Enemy.hpp"
+#include <cstdlib>
 
 bool Overlaps(const SDL_Rect& a, const SDL_Rect& b) {
     if (a.x + a.w <= b.x || b.x + b.w <= a.x) return false;
@@ -26,4 +27,20 @@ bool CollidedWithEnemy(const PlayerState& player, const EnemyState& enemy) {
     SDL_Rect p{ (int)player.x, (int)player.y, (int)player.size, (int)player.size };
     SDL_Rect e{ (int)enemy.x, (int)enemy.y, 50, 50 };
     return Overlaps(p, e);
+}
+
+bool FindSpawnPosition(int window_size, int item_size, int max_attempts,
+    const std::function<bool(const SDL_Rect&)>& isBlocked,
+    int& out_x, int& out_y) {
+    for (int attempt = 0; attempt < max_attempts; ++attempt) {
+        int x = rand() % (window_size - item_size);
+        int y = rand() % (window_size - item_size);
+        SDL_Rect candidate{ x, y, item_size, item_size };
+        if (!isBlocked(candidate)) {
+            out_x = x;
+            out_y = y;
+            return true;
+        }
+    }
+    return false;
 }

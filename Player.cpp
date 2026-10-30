@@ -2,8 +2,6 @@
 #include "GameConstants.hpp"
 
 void Player_UpdateSprite(PlayerState& player) {
-    // B11: called before the player is drawn this frame, so the sprite
-    // matches the current size instead of lagging one frame behind.
     player.current_tex = (player.size > 100) ? player.big_tex : player.small_tex;
 }
 
@@ -12,8 +10,6 @@ void Player_Shrink(PlayerState& player, Uint32 deltatime) {
 }
 
 void Player_ClampToWindow(PlayerState& player, int window_size) {
-    // B8: clamp after the fact (movement, and growth in GameLogic.cpp)
-    // instead of guarding before it, which could still overshoot.
     double max_x = window_size - player.size;
     double max_y = window_size - player.size;
     if (player.x < 0) player.x = 0;
@@ -23,10 +19,25 @@ void Player_ClampToWindow(PlayerState& player, int window_size) {
 }
 
 void Player_HandleMovement(PlayerState& player, const Events& event, Uint32 deltatime, int window_size) {
-    if (event.up)    player.y -= PLAYER_SPEED * deltatime / 1000.0;
-    if (event.right) player.x += PLAYER_SPEED * deltatime / 1000.0;
-    if (event.down)  player.y += PLAYER_SPEED * deltatime / 1000.0;
-    if (event.left)  player.x -= PLAYER_SPEED * deltatime / 1000.0;
+    // B19: build a direction vector and normalize it instead of scaling
+    // each axis independently - the old code gave diagonal movement
+    // ~180*sqrt(2) ≈ 254 px/s instead of the intended 180 px/s. Opposite
+    // keys still cancel exactly as before (both up+down held -> dy=0).
+    double dx = 0;
+    double dy = 0;
+    if (event.up)    dy -= 1;
+    if (event.down)  dy += 1;
+    if (event.left)  dx -= 1;
+    if (event.right) dx += 1;
+
+    if (dx != 0 || dy != 0) {
+        double length = sqrt(dx * dx + dy * dy);
+        dx /= length;
+        dy /= length;
+
+        player.x += dx * PLAYER_SPEED * deltatime / 1000.0;
+        player.y += dy * PLAYER_SPEED * deltatime / 1000.0;
+    }
 
     Player_ClampToWindow(player, window_size);
 }
