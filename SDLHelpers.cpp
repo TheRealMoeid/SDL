@@ -45,7 +45,6 @@ int SDL__CreateWindow(GameContext& ctx, const char* title, int width, int height
         return 1;
     }
 
-    // Create a renderer
     ctx.renderer = SDL_CreateRenderer(ctx.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!ctx.renderer) {
         printf("Error on Definition of Render Engine: %s\n", SDL_GetError());
@@ -56,7 +55,22 @@ int SDL__CreateWindow(GameContext& ctx, const char* title, int width, int height
         return 1;
     }
 
-    // Set background color
+    // B22: load the score font once, here, instead of per-call in
+    // SDL__DrawText. Size is fixed at the one value the game actually
+    // draws text at (30px, see Renderer.cpp's score text).
+    if (ctx.score_font == nullptr) {
+        ctx.score_font = TTF_OpenFont(ASSET_FONTS_DIR "DejaVuSansMono.ttf", 30);
+        if (!ctx.score_font) {
+            printf("Error on Loading Font: %s\n", TTF_GetError());
+            SDL_DestroyRenderer(ctx.renderer);
+            SDL_DestroyWindow(ctx.window);
+            TTF_Quit();
+            IMG_Quit();
+            SDL_Quit();
+            return 1;
+        }
+    }
+
     SDL_SetRenderDrawColor(ctx.renderer, 0, 0, 0, 255); // Black
     SDL_RenderClear(ctx.renderer);
     return 0;
@@ -64,10 +78,17 @@ int SDL__CreateWindow(GameContext& ctx, const char* title, int width, int height
 
 SDL_Color SDL__SetColor(GameContext& ctx, const char* color) {
 
-    // Check if the hex string is valid
-    if (strlen(color) != 7) {
-        printf("Invalid hex color string\n");
+    // B24: validate the leading '#' and that all six remaining
+    // characters are hex digits, not just the string length.
+    if (strlen(color) != 7 || color[0] != '#') {
+        printf("Invalid hex color string: %s\n", color);
         return SDL_Color{ 0,0,0 };
+    }
+    for (int i = 1; i < 7; ++i) {
+        if (!isxdigit((unsigned char)color[i])) {
+            printf("Invalid hex color string: %s\n", color);
+            return SDL_Color{ 0,0,0 };
+        }
     }
 
     char tmp[3];
@@ -88,145 +109,36 @@ SDL_Color SDL__SetColor(GameContext& ctx, const char* color) {
     return SDL_Color{ (unsigned char)r, (unsigned char)g, (unsigned char)b };
 }
 
-void SDL__DrawPoint(GameContext& ctx, int x, int y, const char* color) {
-
-    SDL__SetColor(ctx, color);
-    SDL_RenderDrawPoint(ctx.renderer, x, y);
-}
-
-void SDL__DrawLine(GameContext& ctx, int x1, int y1, int x2, int y2, int width, const char* color) {
-
-    SDL__SetColor(ctx, color);
-
-    float dx = x2 - x1;
-    float dy = y2 - y1;
-    float length = sqrt(dx * dx + dy * dy);
-
-    // Normalize the direction vector
-    dx /= length;
-    dy /= length;
-
-    // Draw multiple lines with small width
-    for (int i = -width / 2; i <= width / 2; ++i) {
-        int _x = i * dx;
-        int _y = -i * dy;
-        SDL_RenderDrawLine(ctx.renderer, x1 + _x, y1 + _y, x2 + _x, y2 + _y);
-    }
-}
-
-void SDL__DrawRect(GameContext& ctx, int x, int y, int w, int h, int width, const char* color) {
-
-    SDL__SetColor(ctx, color);
-
-    for (int i = -width / 2; i <= width / 2; ++i) {
-
-        SDL_Rect rect;
-        rect.x = x + i;
-        rect.y = y + i;
-        rect.w = w - 2 * i;
-        rect.h = h - 2 * i;
-
-        SDL_RenderDrawRect(ctx.renderer, &rect);
-    }
-}
-
-void SDL__FillRect(GameContext& ctx, int x, int y, int w, int h, const char* color) {
-
-    SDL_Rect rect;
-    rect.x = x;
-    rect.y = y;
-    rect.w = w;
-    rect.h = h;
-
-    SDL__SetColor(ctx, color);
-    SDL_RenderFillRect(ctx.renderer, &rect);
-}
-
-void SDL__DrawCircle(GameContext& ctx, int cx, int cy, int radius, int width, const char* color)
-{
-    SDL__SetColor(ctx, color);
-
-    for (int y = -(radius + width + 1); y <= (radius + width + 1); ++y) {
-        for (int x = -(radius + width + 1); x <= (radius + width + 1); ++x) {
-            int distance = sqrt(x * x + y * y);
-            if (distance >= radius - width / 2 && distance <= radius + width / 2) {
-                SDL_RenderDrawPoint(ctx.renderer, cx + x, cy + y);
-            }
-        }
-    }
-}
-
-void SDL__FillCircle(GameContext& ctx, int cx, int cy, int radius, const char* color) {
-
-    SDL__SetColor(ctx, color);
-
-    for (int y = -radius; y <= radius; ++y) {
-        for (int x = -radius; x <= radius; ++x) {
-            if (x * x + y * y <= radius * radius) {
-                SDL_RenderDrawPoint(ctx.renderer, cx + x, cy + y);
-            }
-        }
-    }
-}
-
 void SDL__DrawText(GameContext& ctx, const char* text, int x, int y, int size, const char* color) {
 
-    // Load a font
-    // consola.ttf (Microsoft Consolas) replaced with an openly licensed
-    // font - see CLAUDE.md section 10.
-    TTF_Font* font = TTF_OpenFont(ASSET_FONTS_DIR "DejaVuSansMono.ttf", size);
-    if (!font) {
-        printf("Error on Loading Font: %s\n", TTF_GetError());
+    // B22: font is loaded once in SDL__CreateWindow and reused here -
+    // no more TTF_OpenFont/TTF_CloseFont every call. `size` is accepted
+    // for interface compatibility but no longer used to pick a font,
+    // since only one size (30px) is ever actually requested.
+    if (!ctx.score_font) {
+        printf("Error on Rendering Text: score_font not loaded\n");
         return;
     }
 
-    // Create a text surface
-    SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text, SDL__SetColor(ctx, color));
+    SDL_Surface* surface = TTF_RenderUTF8_Solid(ctx.score_font, text, SDL__SetColor(ctx, color));
     if (!surface) {
         printf("Error on Rendering Text: %s\n", TTF_GetError());
         return;
     }
 
-    // Create a texture from the surface
     SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
     SDL_FreeSurface(surface);
-
-    int text_width, text_height;
-    TTF_SizeUTF8(font, text, &text_width, &text_height);
-    SDL_Rect dest_rect = { x, y, text_width, text_height };
-
-    // Render the text within the specified region
-    SDL_RenderCopy(ctx.renderer, texture, NULL, &dest_rect);
-    SDL_DestroyTexture(texture);
-    TTF_CloseFont(font);
-}
-
-int SDL__DrawImage(GameContext& ctx, const char* path, int x, int y, int w, int h) {
-
-    // Load the image
-    SDL_Surface* surface = IMG_Load(path);
-    if (surface == NULL) {
-        printf("Unable to load image %s! SDL_image Error: %s\n", path, IMG_GetError());
-        return 1;
+    if (!texture) {
+        printf("Error on Creating Text Texture: %s\n", SDL_GetError());
+        return;
     }
 
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
-    SDL_FreeSurface(surface);
+    int text_width, text_height;
+    TTF_SizeUTF8(ctx.score_font, text, &text_width, &text_height);
+    SDL_Rect dest_rect = { x, y, text_width, text_height };
 
-    // Get the image dimensions
-    int image_width, image_height;
-    SDL_QueryTexture(texture, NULL, NULL, &image_width, &image_height);
-
-    // Define the destination rectangle
-    SDL_Rect dst_rect = { x, y, w, h };
-
-    // Render the image
-    SDL_RenderCopy(ctx.renderer, texture, NULL, &dst_rect);
-    //SDL_RenderPresent(ctx.renderer);
-
-    // ... (Cleanup as before)
-
-    return 0;
+    SDL_RenderCopy(ctx.renderer, texture, NULL, &dest_rect);
+    SDL_DestroyTexture(texture);
 }
 
 void SDL__Clear(GameContext& ctx, const char* color) {
@@ -314,6 +226,10 @@ void SDL__Present(GameContext& ctx, int delay) {
 
 void SDL__Destroy(GameContext& ctx) {
 
+    if (ctx.score_font) {
+        TTF_CloseFont(ctx.score_font);
+        ctx.score_font = nullptr;
+    }
     if (ctx.renderer) {
         SDL_DestroyRenderer(ctx.renderer);
         ctx.renderer = nullptr;
@@ -323,5 +239,6 @@ void SDL__Destroy(GameContext& ctx) {
         ctx.window = nullptr;
     }
     TTF_Quit();
+    IMG_Quit(); // B23: was never called - IMG_Init'd but never torn down
     SDL_Quit();
 }

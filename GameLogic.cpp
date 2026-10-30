@@ -13,28 +13,20 @@ static SDL_Texture* LoadTextureChecked(SDL_Renderer* ren, const char* path) {
 
 void Game_LoadTextures(GameContext& ctx, GameWorld& world) {
     world.player.small_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "BacheGherti.png");
-	world.player.big_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Hestler.png");
+    world.player.big_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Hestler.png");
     world.player.current_tex = world.player.small_tex;
-	world.health.texture = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Health.png");
-	world.fire.texture = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Fire.png");
-	world.enemy.texture = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Enemy.png");
-	world.background_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "background.png");
-	world.gameover_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "GameOver.png");
-	world.win_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Win.png");
+    world.health.texture = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Health.png");
+    world.fire.texture = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Fire.png");
+    world.enemy.texture = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Enemy.png");
+    world.background_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "background.png");
+    world.gameover_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "GameOver.png");
+    world.win_tex = LoadTextureChecked(ctx.renderer, ASSET_IMAGES_DIR "Win.png");
 }
 
-static void Game_DestroyTextures(GameWorld& world) {
-    SDL_DestroyTexture(world.player.small_tex);
-    SDL_DestroyTexture(world.player.big_tex);
-    SDL_DestroyTexture(world.health.texture);
-    SDL_DestroyTexture(world.fire.texture);
-    SDL_DestroyTexture(world.enemy.texture);
-    SDL_DestroyTexture(world.background_tex);
-    SDL_DestroyTexture(world.gameover_tex);
-    SDL_DestroyTexture(world.win_tex);
-}
-
-static void Game_ResetState(GameWorld& world) {
+// B21: round-state reset only - no texture destroy/reload. Mirrors what
+// game.cpp's inline startup block does, so the two are now consistent
+// (previously Game_Reset did strictly more work than startup did).
+void Game_Reset(GameContext& ctx, GameWorld& world) {
     world.state = GameState::Playing;
     world.player.size = 50;
     world.player.x = (world.window_size - (int)world.player.size) / 2;
@@ -49,12 +41,6 @@ static void Game_ResetState(GameWorld& world) {
     world.enemy.direction_timer = 0.0;
     world.score_time = 0;
     world.health_counter = 0;
-}
-
-void Game_Reset(GameContext& ctx, GameWorld& world) {
-    Game_DestroyTextures(world);
-    Game_LoadTextures(ctx, world);
-    Game_ResetState(world);
 }
 
 void Game_RunFrame(GameContext& ctx, GameWorld& world, const Events& event, Uint32 deltatime) {
