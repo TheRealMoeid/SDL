@@ -3,7 +3,7 @@
 
 int SDL__CreateWindow(GameContext& ctx, const char* title, int width, int height) {
 
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
         printf("Error on SDL Initialization: %s\n", SDL_GetError());
@@ -211,18 +211,6 @@ Events SDL__Events(GameContext& ctx) {
     return ctx.events;
 }
 
-void SDL__Present(GameContext& ctx, int delay) {
-
-    SDL_RenderPresent(ctx.renderer);
-
-    int executeTime = ((double)(clock() - ctx.lastRun) / CLOCKS_PER_SEC) * 1000;
-    delay -= executeTime;
-    if (delay > 0) {
-        SDL_Delay(delay);
-    }
-
-    ctx.lastRun = clock();
-}
 
 void SDL__Destroy(GameContext& ctx) {
 
