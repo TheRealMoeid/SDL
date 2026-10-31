@@ -41,25 +41,23 @@ overlapping each other.
 
 ### Visual Studio (Windows)
 
-Requires [vcpkg](https://github.com/microsoft/vcpkg) with SDL2,
-SDL2_image and SDL2_ttf installed, and `vcpkg integrate install` run
-once on your machine:
+Requires Visual Studio with the "Desktop development with C++" workload.
+Dependencies (SDL2, SDL2_image, SDL2_ttf) are declared in `vcpkg.json` and
+installed automatically on the first build.
+
+If you haven't used vcpkg with Visual Studio before, run this once:
 
 ```powershell
-git clone https://github.com/microsoft/vcpkg.git
-cd vcpkg
-.\bootstrap-vcpkg.bat
-.\vcpkg integrate install
-.\vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-ttf:x64-windows
+vcpkg integrate install
 ```
 
-Then open `sdl.sln`. The project targets `PlatformToolset v145`;
-retarget to your installed toolset if Visual Studio reports it as
-missing. The Debug|x64 configuration is wired up for vcpkg; the
-needed SDL DLLs are copied next to the built executable automatically
-via a post-build step.
+Then open `sdl.sln`, select **Debug | x64** or **Release | x64**, and
+build. The first build takes several minutes while vcpkg compiles the
+libraries. The project targets `PlatformToolset v145`; retarget to your
+installed toolset if Visual Studio reports it as missing. The Win32
+configurations are not supported.
 
-### CMake (Windows / Linux / macOS)
+### CMake (Linux / macOS)
 
 Requires SDL2, SDL2_image and SDL2_ttf development packages
 discoverable via pkg-config (e.g. `apt install libsdl2-dev

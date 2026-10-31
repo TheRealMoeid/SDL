@@ -67,7 +67,6 @@ void Game_RunFrame(GameContext& ctx, GameWorld& world, const Events& event, Uint
     }
 
     //-------------------- Fire item spawn/shrink -------------------------
-    Fire_SpawnIfNeeded(world.fire, world.player, world.enemy, world.health, world.window_size);
     Fire_Shrink(world.fire, deltatime); // not gated by Playing - see Fire.cpp
 
     //-------------------- Player movement --------------------------------
@@ -84,9 +83,11 @@ void Game_RunFrame(GameContext& ctx, GameWorld& world, const Events& event, Uint
         if (!world.fire.visible) {
             world.health_counter++;
             if (world.health_counter >= 3) {
-                world.fire.visible = true;
-                world.fire.size = 50;
-                world.health_counter = 0;
+                // B25: position chosen now, not in advance. If no spot is found
+                // the counter stays at 3 and the next health pickup retries.
+                if (Fire_Reveal(world.fire, world.player, world.enemy, world.health, world.window_size)) {
+                    world.health_counter = 0;
+                }
             }
         }
     }
