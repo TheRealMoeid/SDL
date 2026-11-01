@@ -73,6 +73,23 @@ The built executable expects an `assets/` folder next to it, containing
 `assets/images/` (the PNGs) and `assets/fonts/DejaVuSansMono.ttf`; the
 CMake build copies this folder there automatically.
 
+## Tests
+
+The SDL-free gameplay logic (collision, player movement, item spawning,
+fire, enemy movement) has unit tests built with
+[doctest](https://github.com/doctest/doctest), installed through
+`vcpkg.json` like the other dependencies. They run without opening a
+game window.
+
+In Visual Studio, build the `tests` project (**Debug | x64** or
+**Release | x64**) and run it from the repository root:
+
+```powershell
+.\x64\Debug\tests.exe
+```
+
+A passing run ends with `Status: SUCCESS!` and exit code 0.
+
 ## License
 
 MIT - see [LICENSE](LICENSE).
