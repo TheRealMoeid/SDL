@@ -79,8 +79,13 @@
     <ClCompile Include="TestMain.cpp" />
     <ClCompile Include="CollisionTests.cpp" />
     <ClCompile Include="PlayerTests.cpp" />
+    <ClCompile Include="SpawnTests.cpp" />
+    <ClCompile Include="EnemyTests.cpp" />
     <ClCompile Include="..\Collision.cpp" />
     <ClCompile Include="..\Player.cpp" />
+    <ClCompile Include="..\Health.cpp" />
+    <ClCompile Include="..\Fire.cpp" />
+    <ClCompile Include="..\Enemy.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
