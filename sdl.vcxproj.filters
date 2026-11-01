@@ -44,9 +44,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SDL.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Collision.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
