@@ -4,6 +4,8 @@ A small 2D survival game built with SDL2. You play a square that
 constantly shrinks over time. Collect health items to grow, avoid fire
 items and the wandering enemy, and reach full size to win.
 
+![Gameplay](docs/images/gameplay.gif)
+
 ## Rules
 
 - **Move**: Arrow keys
