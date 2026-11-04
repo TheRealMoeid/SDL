@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch/PR cancels the older run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows ${{ matrix.configuration }} (build + tests)
+    # VS 2026 image: v145 (the PlatformToolset in sdl.vcxproj) is its native toolset.
+    runs-on: windows-2025-vs2026
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+    env:
+      # vcpkg's file-based binary cache; restored/saved by actions/cache below so
+      # SDL2/SDL2_image/SDL2_ttf are not recompiled on every run.
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\.vcpkg-cache
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-windows-${{ hashFiles('vcpkg.json') }}
+          restore-keys: vcpkg-windows-
+
+      - name: Set up vcpkg (runner copy, updated to cover the manifest baseline)
+        shell: pwsh
+        run: |
+          $root = $env:VCPKG_INSTALLATION_ROOT
+          "VCPKG_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append
+          New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
+
+          # The runner image's vcpkg clone can be older than the builtin-baseline
+          # pinned in vcpkg.json; fetch so the baseline commit exists locally.
+          if ((git -C $root rev-parse --is-shallow-repository) -eq 'true') {
+            git -C $root fetch --unshallow
+          } else {
+            git -C $root fetch origin
+          }
+
+          # Same one-time step as on a developer machine (README, "Visual Studio").
+          & "$root\vcpkg.exe" integrate install
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Locate MSBuild
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
+          if (-not $msbuild) { throw "MSBuild not found" }
+          "MSBUILD=$msbuild" | Out-File -FilePath $env:GITHUB_ENV -Append
+          & $msbuild -version
+
+      - name: Build sdl and tests (${{ matrix.configuration }}|x64)
+        shell: pwsh
+        run: |
+          # Not parallel (/m): both projects share one vcpkg_installed/, so the
+          # first one installs and the second finds everything already there.
+          & $env:MSBUILD sdl.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=x64 /v:minimal
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          & ".\x64\${{ matrix.configuration }}\tests.exe"
+          exit $LASTEXITCODE
+
+  linux-cmake:
+    name: Linux (CMake build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake pkg-config libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
+
+      - name: Configure
+        run: cmake -B build
+
+      - name: Build
+        run: cmake --build build
